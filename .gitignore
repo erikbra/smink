@@ -396,3 +396,8 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+.idea
+
+# Code folders containing excluded patterns
+!TestResultReaders_*
+!TestResultAdapters_*

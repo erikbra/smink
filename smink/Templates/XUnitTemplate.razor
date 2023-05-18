@@ -1,0 +1,400 @@
+@using smink.Models.Report
+@using smink.Models.XUnit
+@inherits XUnitTemplateRazorPage
+
+<html>
+<head>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet"/>
+    <style>
+                    .errorMessage {
+                		font-size: 16px;
+    					font-family: Lato, sans-serif;
+    					font-weight: 300;
+    					color: black;
+                        display: inline;
+                        border-radius: 5px;
+                        padding: 1px;
+                	}
+                	.errorColor {
+                		background-color: #f7e1d4;
+                	}
+                	.failureColor {
+                		background-color: #f7d4d4;
+                	}
+                </style>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <link href="https://cdn.jsdelivr.net/npm/semantic-ui@2.3.3/dist/semantic.min.css" rel="stylesheet"/>
+    <script crossorigin="anonymous" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" src="https://code.jquery.com/jquery-3.1.1.min.js">
+                </script>
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.3.3/dist/semantic.min.js">
+                </script>
+    <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js">
+                </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.address/1.6/jquery.address.min.js">
+                </script>
+</head>
+<body style="color:rgba(47, 53, 69, 0.9);">
+<div class="ui container" style="margin:40px;">
+
+<h2 class="ui header">
+    <div class="content">
+        <span style="font-size:30px; font-weight:300; font-family:Open Sans;">
+            <span style="font-weight:600;">
+                Test
+            </span>
+            Result
+        </span>
+        <div>
+            <div class="ui active indicating progress" data-percent="@(TestReport.SuccessRate)" style="margin-top:10px;">
+                <div class="bar" style="width:@(TestReport.SuccessRate)%">
+                </div>
+            </div>
+        </div>
+        <div class="ui divider">
+        </div>
+        <div class="sub header" style="margin-top: 15px;">
+            <div class="ui mini statistics">
+                <div class="statistic" data-tooltip="Total tests ran">
+                    <div class="value">
+                        <i class="folder open outline icon gray" style="padding-right:4px;">
+                        </i>
+                        @TestReport.TotalTests
+                    </div>
+                    <div class="label">
+                        Tests
+                    </div>
+                </div>
+                <div class="statistic" data-tooltip="Total successful test runs">
+                    <div class="value">
+                        <i class="check circle outline icon green" style="padding-right:4px;">
+                        </i>
+                        @TestReport.TotalSuccessful
+                    </div>
+                    <div class="label">
+                        Passed
+                    </div>
+                </div>
+                <div class="statistic" data-tooltip="Total test runs with failed assertions">
+                    <div class="value">
+                        <i class="exclamation circle icon red" style="padding-right:4px;">
+                        </i>
+                        @TestReport.TotalFailures
+                    </div>
+                    <div class="label">
+                        Failed
+                    </div>
+                </div>
+                <div class="statistic" data-tooltip="Total test runs with unanticipated errors">
+                    <div class="value">
+                        <i class="flag outline icon orange" style="padding-right:4px;">
+                        </i>
+                        @TestReport.TotalErrors
+                    </div>
+                    <div class="label">
+                        Errored
+                    </div>
+                </div>
+                <div class="statistic" data-tooltip="Total runtime for all tests">
+                    <div class="value">
+                        <i class="hourglass half icon blue" style="padding-right:4px;">
+                        </i>
+                        @($@"{TestReport.TotalTime:mm\:ss}")
+                        <span style="text-transform:lowercase; font-size:12px;">
+                            min
+                        </span>
+                    </div>
+                    <div class="label">
+                        Runtime
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</h2>
+
+<div class="ui styled fluid accordion" style="font-size: 16px; font-family: Open sans;">
+@foreach (var suite in TestReport.TestSuites)
+{
+    <div class="title">
+        <i class="angle right icon">
+        </i>
+        <b style="font-family: Lato; font-size: 15px; color: #2f2f2f; font-weight: bold;">
+            @suite.DisplayName
+        </b>
+        <!-- Time Label -->
+        <div class="ui blue label" data-tooltip="Test suite runtime" style="float:right;">
+            <i class="clock icon">
+            </i>
+            <b>@($"{suite.TotalTime:0.000}")</b>
+            sec
+        </div>
+        <div class="ui label" style="border: 1px solid #80808045;">
+            <b>
+                Test Suite
+            </b>
+        </div>
+        <!-- Test Suite Labels -->
+        @if (suite.Failed > 0)
+        {
+            <div class="ui red label" data-tooltip="Total test runs with failed assertions" style="float:right;">
+                <i class="exclamation circle icon">
+                </i>
+                <b>
+                    @suite.Failed
+                </b>
+                failed
+            </div>
+        }
+        @if (suite.Errors > 0)
+        {
+            <div class="ui orange label" data-tooltip="Total test runs with unanticipated errors" style="float:right;">
+                <i class="flag outline icon">
+                </i>
+                <b>
+                    @suite.Errors
+                </b>
+                errored
+            </div>
+        }
+        @if (suite.Passed > 0)
+        {
+            <div class="ui green label" data-tooltip="Total successful test runs" style="float:right;">
+                <i class="check circle outline icon">
+                </i>
+                <b>@suite.Passed</b>
+                passed
+            </div>
+        }
+        <!-- Skipped Label -->
+        @if (suite.Skipped > 0)
+        {
+            <div class="ui gray label" data-tooltip="Total number of skipped tests" style="float:right;     border: 1px solid gray;">
+                <i class="ban icon">
+                </i>
+                <b>@suite.Skipped</b>
+                skipped
+            </div>
+        }
+        <div class="ui active indicating progress" data-percent="@suite.SuccessRate" style="margin-top:10px;">
+            <div class="bar" style="width:@suite.SuccessRate%">
+            </div>
+        </div>
+    </div>
+    <div class="content">
+    <div class="accordion" style="background-color:#00000017;">
+    @foreach (var scenario in suite.TestScenarios)
+    {
+        <div class="title">
+            <i class="dropdown icon">
+            </i>
+            <b>@scenario.DisplayName</b>
+            <!-- Time Label -->
+            <div class="ui blue label" data-tooltip="Test class runtime" style="float:right;">
+                <i class="clock icon">
+                </i>
+                <b>@($"{scenario.Time:0.000}")</b>
+                sec
+            </div>
+            <div class="ui label" style="background-color: rgba(255, 255, 255, 0.66); border: 1px solid #bbb6b6;">
+                <b>
+                    Test Class
+                </b>
+            </div>
+            <!-- Skipped Label -->
+            @if (scenario.Skipped > 0)
+            {
+                <div class="ui gray label" data-tooltip="Total number of skipped tests" style="float:right; border: 1px solid gray;">
+                    <i class="ban icon">
+                    </i>
+                    <b>@scenario.Skipped</b>
+                    skipped
+                </div>
+            }
+            <!-- Test Results Labels -->
+            @if (scenario.Passed == scenario.Total)
+            {
+                <xsl:when test="$class_total_successful = $class_total_tests">
+                    <div class="ui green label" data-tooltip="Total successful test runs" style="float:right;">
+                        <i class="check circle outline icon">
+                        </i>
+                        <b>@scenario.Passed</b>
+                    </div>
+                </xsl:when>
+            }
+            else if (scenario.Failed > 0)
+            {
+                <xsl:when test="$class_total_failures > 0">
+                    <div class="ui red label" data-tooltip="Total test runs with failed assertions" style="float:right;">
+                        <i class="exclamation circle icon">
+                        </i>
+                        <b>@scenario.Failed</b>
+                    </div>
+                </xsl:when>
+            }
+            @if (scenario.Errors > 0)
+            {
+                <div class="ui orange label" data-tooltip="Total test runs with unanticipated errors" style="float:right;">
+                    <i class="flag outline icon">
+                    </i>
+                    <b>@scenario.Errors</b>
+                </div>
+            }
+            <div class="ui active indicating progress" data-percent="@scenario.SuccessRate" style="margin-top:10px;">
+                <div class="bar" style="width:@scenario.SuccessRate%">
+                </div>
+            </div>
+        </div>
+        <div class=" content">
+            <div class="accordion">
+                @foreach (var test in scenario.Tests)
+                {
+                    <div class="title" style="@GetStyle(test)">
+                        @{
+                            var icon = test switch {
+                                { HasContent: true } => "angle down",
+                                { Result: "Skip" } => "question circle outline",
+                                _ => "check circle outline"
+                            };
+                            
+                            var style = test switch {
+                                { Result: "Skip" } => "color:#5f5f5f; margin-right:15px",
+                                _ => "color:#5f5f5f; margin-right:15px",
+                            };
+                        }
+                        
+                        <i class="@icon icon" style="@style">
+                        </i>
+
+                        <span style="font-family: Open Sans, sans-serif; font-weight: 300;">
+                            @{
+                                var extraStyles = test switch {
+                                    { Result: "Skip" } => " text-decoration: line-through",
+                                    _ => ""
+                                };
+                            }
+
+                            <b style="font-family: Lato,sans-serif; font-weight: bold;@extraStyles">@test.DisplayName</b>
+                        </span>
+                        <!-- Time Label -->
+                        <div class="ui blue label" data-tooltip="Test runtime" style="float:right;">
+                            <i class="clock icon">
+                            </i>
+                            <b>@($"{test.Time:0.000}")</b>
+                            sec
+                        </div>
+                        @if (test.Failure?.ExceptionType is { Length: > 0 } exceptionType)
+                        {
+                            <div class="ui red label" data-tooltip="Exception/Error type" style="float:right;">
+                                <i class="exclamation triangle icon">
+                                </i>
+                                @exceptionType
+                            </div>
+                        }
+                        else if (test.Result == "Fail")
+                        {
+                            <div class="ui orange label" data-tooltip="Exception/Error type" style="float:right;">
+                                <i class="exclamation triangle icon">
+                                </i>
+                                @(test.Failure?.ExceptionType ?? test.Failure?.Message)
+                            </div>
+                        }
+                    </div>
+
+                    @if (test.HasContent)
+                    {
+                        <div class="content" style="@GetStyle(test)">
+
+                            <div style="background-color:rgb(243,243,243);border-radius:7px; padding: 25px;">
+                                @if (test.Failure?.Message is { Length: > 0})
+                                {
+                                    <p class="errorMessage failureColor">@Shorten(test.Failure.Message)</p>
+                                }
+                                @if (test.Result == "Fail")
+                                {
+                                    <p class="errorMessage errorColor">@Shorten(test.Reason)</p>
+                                }
+
+                                <div class="ui segment" style="padding-top: 15pt; background-color: #ffffff00; box-shadow: none; border: none;">
+                                    <div class="ui menu top" style="background-color: transparent; box-shadow: none; border: none;">
+                                        @if (test.Failure?.Message is { Length: > 0 })
+                                        {
+                                            <a class="active item" style="border-bottom: 3px solid #00000042; font-weight: bolder;"
+                                               data-tab="@($"failure_{test.SanitizedName}")">
+                                                Failure
+                                            </a>
+                                        }
+                                        @if (test.Failure?.StackTrace is { Length: > 0 })
+                                        {
+                                            <a class="item" style="border-bottom: 3px solid #00000042; font-weight: bolder;"
+                                               data-tab="@($"stacktrace_{test.SanitizedName}")">
+                                                Stack trace
+                                            </a>
+                                        }
+                                        @if (test.Reason is { Length: > 0 })
+                                        {
+                                            <a class="item"
+                                               style="border-bottom: 3px solid #00000042; font-weight: bolder;"
+                                               data-tab="@($"reason_{test.SanitizedName}")">
+                                                Reason
+                                            </a>
+                                        }
+
+                                    </div>
+
+                                    @if (test.Failure?.Message is { Length: > 0})
+                                    {
+                                        <div class="ui tab active"
+                                             data-tab="@($"failure_{test.SanitizedName}")">
+                                            <pre class="prettyprint" style=" overflow: scroll;padding: 20px; max-height: 400px; 
+                                            border: 1px solid #80808054; background-color: white;">
+                                	    <code>@test.Failure.Message</code>
+                                	</pre>
+                                        </div>
+                                    }
+                                     @if (test.Failure?.StackTrace is { Length: > 0})
+                                    {
+                                        <div class="ui tab"
+                                             data-tab="@($"stacktrace_{test.SanitizedName}")">
+                                            <pre class="prettyprint" style=" overflow: scroll;padding: 20px; max-height: 400px; 
+                                            border: 1px solid #80808054; background-color: white;">
+                                        <code>@test.Failure.StackTrace</code>
+                                    </pre>
+                                        </div>
+                                    }
+
+                                    @if (test.Reason is { Length: > 0 })
+                                    {
+                                        <div class="ui tab"
+                                             data-tab="@($"reason_{test.SanitizedName}")">
+                                            <pre class="prettyprint" style=" overflow: scroll;padding: 20px; max-height: 400px; 
+                                        border: 1px solid #80808054; background-color: white;">
+                                                <code>@test.Reason</code>
+                                            </pre>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="content" style="padding:0px;">
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    }
+    </div>
+    </div>
+}
+</div>
+</div>
+<script>
+                    $(document).ready(function(){
+						$('.ui.accordion').accordion();
+						$('.top.menu .item').tab();
+					});
+                </script>
+</body>
+</html>
