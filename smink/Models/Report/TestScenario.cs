@@ -7,6 +7,7 @@ public class TestScenario
     public Guid Id { get; set; }
     public string? Name { get; set; }
     public string? DisplayName { get; set; }
+    public string SanitizedName => Common.Sanitize(Name ?? Id.ToString());
     
     public int Passed { get; set; }
     public int Skipped { get; set; }

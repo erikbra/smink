@@ -1,8 +1,6 @@
-@using smink.Models.Report
-@using smink.Models.XUnit
-@inherits XUnitTemplateRazorPage
+@inherits DefaultTestReportTemplateRazorPage
 
-<html>
+<html lang="en">
 <head>
     <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet"/>
     <style>
@@ -36,7 +34,7 @@
 <body style="color:rgba(47, 53, 69, 0.9);">
 <div class="ui container" style="margin:40px;">
 
-<h2 class="ui header">
+<h1 class="ui header">
     <div class="content">
         <span style="font-size:30px; font-weight:300; font-family:Open Sans;">
             <span style="font-weight:600;">
@@ -56,7 +54,7 @@
             <div class="ui mini statistics">
                 <div class="statistic" data-tooltip="Total tests ran">
                     <div class="value">
-                        <i class="folder open outline icon gray" style="padding-right:4px;">
+                        <i class="shipping fast icon gray" style="padding-right:4px;">
                         </i>
                         @TestReport.TotalTests
                     </div>
@@ -110,11 +108,13 @@
             </div>
         </div>
     </div>
-</h2>
+</h1>
 
 <div class="ui styled fluid accordion" style="font-size: 16px; font-family: Open sans;">
 @foreach (var suite in TestReport.TestSuites)
 {
+    <a id="@suite.SanitizedName"></a>
+    
     <div class="title">
         <i class="angle right icon">
         </i>
@@ -184,6 +184,8 @@
     <div class="accordion" style="background-color:#00000017;">
     @foreach (var scenario in suite.TestScenarios)
     {
+        <a id="@scenario.SanitizedName"></a>
+                                    
         <div class="title">
             <i class="dropdown icon">
             </i>
@@ -248,6 +250,8 @@
             <div class="accordion">
                 @foreach (var test in scenario.Tests)
                 {
+                    <a id="@test.SanitizedName"></a>
+                                                   
                     <div class="title" style="@GetStyle(test)">
                         @{
                             var icon = test switch {
