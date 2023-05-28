@@ -215,23 +215,19 @@
             <!-- Test Results Labels -->
             @if (scenario.Passed == scenario.Total)
             {
-                <xsl:when test="$class_total_successful = $class_total_tests">
-                    <div class="ui green label" data-tooltip="Total successful test runs" style="float:right;">
-                        <i class="check circle outline icon">
-                        </i>
-                        <b>@scenario.Passed</b>
-                    </div>
-                </xsl:when>
+                <div class="ui green label" data-tooltip="Total successful test runs" style="float:right;">
+                    <i class="check circle outline icon">
+                    </i>
+                    <b>@scenario.Passed</b>
+                </div>
             }
             else if (scenario.Failed > 0)
             {
-                <xsl:when test="$class_total_failures > 0">
-                    <div class="ui red label" data-tooltip="Total test runs with failed assertions" style="float:right;">
-                        <i class="exclamation circle icon">
-                        </i>
-                        <b>@scenario.Failed</b>
-                    </div>
-                </xsl:when>
+                <div class="ui red label" data-tooltip="Total test runs with failed assertions" style="float:right;">
+                    <i class="exclamation circle icon">
+                    </i>
+                    <b>@scenario.Failed</b>
+                </div>
             }
             @if (scenario.Errors > 0)
             {
