@@ -45,6 +45,7 @@
         <div>
             <div class="ui active indicating progress" data-percent="@(TestReport.SuccessRate)" style="margin-top:10px;">
                 <div class="bar" style="width:@(TestReport.SuccessRate)%">
+                    <div class="progress">@TestReport.TotalSuccessful/@TestReport.TotalTests passed</div>
                 </div>
             </div>
         </div>
@@ -177,6 +178,7 @@
         }
         <div class="ui active indicating progress" data-percent="@suite.SuccessRate" style="margin-top:10px;">
             <div class="bar" style="width:@suite.SuccessRate%">
+                <div class="progress">@suite.Passed/@suite.Total passed</div>
             </div>
         </div>
     </div>
@@ -239,6 +241,7 @@
             }
             <div class="ui active indicating progress" data-percent="@scenario.SuccessRate" style="margin-top:10px;">
                 <div class="bar" style="width:@scenario.SuccessRate%">
+                    <div class="progress">@scenario.Passed/@scenario.Total passed</div>
                 </div>
             </div>
         </div>
