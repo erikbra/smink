@@ -14,7 +14,7 @@ public class RunUnitTestsFixture: IAsyncLifetime
     {
         var here = Path.GetFullPath(Directory.GetCurrentDirectory());
         
-        ExampleTestProjectFolder = Path.GetFullPath("xunit.ExampleTests", FindExampleTestProjectFolder(here));
+        ExampleTestProjectFolder = Path.GetFullPath("xUnit.ExampleTests", FindExampleTestProjectFolder(here));
         TestResultsFolder = Path.Combine(ExampleTestProjectFolder, "TestResults");
 
         if (!Directory.Exists(TestResultsFolder))
