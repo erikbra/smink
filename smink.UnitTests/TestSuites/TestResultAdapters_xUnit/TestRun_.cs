@@ -7,21 +7,19 @@ using smink.TestResultReaders;
 
 namespace smink.UnitTests.TestSuites.TestResultAdapters_xUnit;
 
-public class TestRun_: IClassFixture<RunUnitTestsFixture>
+[Collection(nameof(RunUnitTestsFixture))]
+public class TestRun_
 {
     private readonly TestRun _passedTest;
     private readonly TestRun _skippedTest;
     private readonly TestRun _failedTest;
+    private readonly RunUnitTestsFixture _fixture;
 
     public TestRun_(RunUnitTestsFixture fixture)
     {
-        var xunit = new XUnitResultsReader();
-        var testReport = new XUnitResultsAdapter();
+        var report = fixture.TestReport;
 
-        var load = xunit.Load(fixture.TestResultsFiles.First());
-        load.Wait();
-        var testResults = load.Result;
-        var report = testReport.Read(testResults);
+        _fixture = fixture;
 
         var testSuite = report!.TestSuites.Skip(1).FirstOrDefault();
         IEnumerable<TestScenario> scenarios = testSuite!.TestScenarios.ToList();
@@ -70,7 +68,7 @@ Actual:   False");
     
     [Fact]
     public void Failed_test_has_correct_Failure_StackTrace() => _failedTest.Failure!.StackTrace.Should().Be(
-@"   at xUnit.ExampleTests.Set1.TestSuites.Adding_a_new_customer.When_the_customer_is_too_old.We_make_them_happy() in /Users/erik/src/Repos/erikbra/smink/ExampleTestProjects/xUnit.ExampleTests/xUnit.ExampleTests.Set1/TestSuites/Adding_a_new_customer/When_the_customer_is_too_old.cs:line 12
+$@"   at xUnit.ExampleTests.Set1.TestSuites.Adding_a_new_customer.When_the_customer_is_too_old.We_make_them_happy() in {_fixture.ExampleTestProjectFolder}/xUnit.ExampleTests.Set1/TestSuites/Adding_a_new_customer/When_the_customer_is_too_old.cs:line 12
    at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
    at System.Reflection.MethodInvoker.Invoke(Object obj, IntPtr* args, BindingFlags invokeAttr)");
     

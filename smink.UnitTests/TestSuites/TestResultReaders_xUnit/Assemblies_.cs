@@ -1,40 +1,36 @@
 using System.Globalization;
 using FluentAssertions;
-using smink.TestResultReaders;
+using smink.Models.XUnit;
 
 namespace smink.UnitTests.TestSuites.TestResultReaders_xUnit;
 
-public class Assemblies_: IClassFixture<RunUnitTestsFixture>
+[Collection(nameof(RunUnitTestsFixture))]
+public class Assemblies_
 {
-    private readonly RunUnitTestsFixture _fixture;
-    private readonly XUnitResultsReader _xunit;
+    private readonly Assemblies? _results;
 
     public Assemblies_(RunUnitTestsFixture fixture)
     {
-        _fixture = fixture;
-        _xunit = new XUnitResultsReader();
+        _results = fixture.Assemblies;
     }
 
     [Fact]
-    public async Task Is_not_null()
+    public void Is_not_null()
     {
-        var results = await _xunit.Load(_fixture.TestResultsFiles.ToArray());
-        results.Should().NotBeNull();
+        _results.Should().NotBeNull();
     }
     
     [Fact]
-    public async Task Contains_each_single_Assembly()
+    public void Contains_each_single_Assembly()
     {
-        var results = await _xunit.Load(_fixture.TestResultsFiles.ToArray());
-        results!.AssembliesList.Should().HaveCount(2);
+        _results!.AssembliesList.Should().HaveCount(2);
     }
     
     [Fact]
-    public async Task Has_Timestamp()
+    public void Has_Timestamp()
     {
-        var results = await _xunit.Load(_fixture.TestResultsFiles.ToArray());
-        results!.Timestamp!.Should().NotBeNull();
-        var dt = DateTime.Parse(results.Timestamp!, DateTimeFormatInfo.InvariantInfo);
+        _results!.Timestamp!.Should().NotBeNull();
+        var dt = DateTime.Parse(_results.Timestamp!, DateTimeFormatInfo.InvariantInfo);
         dt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(15));
     }
 
