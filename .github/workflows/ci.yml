@@ -34,7 +34,9 @@ jobs:
       if: always()
       run: |
         dotnet run --project smink -- ./TestResults/smink.UnitTests.testresults.xml ./TestResults/smink.UnitTests.testresults.html
-        cat ./TestResults/smink.UnitTests.testresults.html > $GITHUB_STEP_SUMMARY
+        echo '<![CDATA[' > $GITHUB_STEP_SUMMARY
+        cat ./TestResults/smink.UnitTests.testresults.html >> $GITHUB_STEP_SUMMARY
+        echo ']]>' >> $GITHUB_STEP_SUMMARY
     - name: Upload test report
       if: always()
       uses: actions/upload-artifact@v2
