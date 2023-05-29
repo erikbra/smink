@@ -13,9 +13,8 @@ public class RunUnitTestsFixture: IAsyncLifetime
     public RunUnitTestsFixture()
     {
         var here = Path.GetFullPath(Directory.GetCurrentDirectory());
-        Console.WriteLine("Current directory: " + here);
         
-        ExampleTestProjectFolder =  Path.GetFullPath("../../../../ExampleTestProjects/xunit.ExampleTests", here);
+        ExampleTestProjectFolder = Path.GetFullPath("xunit.ExampleTests", FindExampleTestProjectFolder(here));
         TestResultsFolder = Path.Combine(ExampleTestProjectFolder, "TestResults");
 
         if (!Directory.Exists(TestResultsFolder))
@@ -24,6 +23,30 @@ public class RunUnitTestsFixture: IAsyncLifetime
         }
         
         _testResultsFilePattern = Path.Combine(TestResultsFolder, "{assembly}.test_result.xml");
+    }
+
+    private static string FindExampleTestProjectFolder(string here)
+    {
+        const string folderToFind = "ExampleTestProjects";
+
+        var currentFolder = new DirectoryInfo(here);
+
+        bool found;
+        do
+        {
+            currentFolder = currentFolder.Parent;
+            var directories = currentFolder.GetDirectories(folderToFind);
+            found = directories.Any();
+        } while (!found && currentFolder != currentFolder.Root);
+
+        if (!found)
+        {
+            throw new ApplicationException($"Unable to find folder {folderToFind} in parents of {here}");
+        }
+
+        Console.WriteLine("Current folder: " + currentFolder.FullName);
+
+        return Path.GetFullPath(folderToFind, currentFolder.FullName);
     }
 
 
@@ -47,7 +70,7 @@ public class RunUnitTestsFixture: IAsyncLifetime
                 "test",
                 "-verbosity:q",
                 "-maxcpucount:1",
-                $"--logger:'xunit;LogFilePath={_testResultsFilePattern}'"
+                $"--logger:xunit;LogFilePath={_testResultsFilePattern}"
             }
         };
 
