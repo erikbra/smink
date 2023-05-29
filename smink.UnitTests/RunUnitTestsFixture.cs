@@ -36,15 +36,13 @@ public class RunUnitTestsFixture: IAsyncLifetime
         {
             currentFolder = currentFolder.Parent;
             var directories = currentFolder.GetDirectories(folderToFind);
-            found = directories.Any();
+            found = directories.Length != 0;
         } while (!found && currentFolder != currentFolder.Root);
 
         if (!found)
         {
             throw new ApplicationException($"Unable to find folder {folderToFind} in parents of {here}");
         }
-
-        Console.WriteLine("Current folder: " + currentFolder.FullName);
 
         return Path.GetFullPath(folderToFind, currentFolder.FullName);
     }
@@ -55,7 +53,7 @@ public class RunUnitTestsFixture: IAsyncLifetime
         Console.WriteLine("\n\n--------------------------------------------------");
         Console.WriteLine("Running example xUnit test assembly in: " + ExampleTestProjectFolder + "\n");
 
-        var files = string.Join(' ', Directory.GetFiles(ExampleTestProjectFolder));
+        var files = string.Join('\n', Directory.GetFiles(ExampleTestProjectFolder, "*", SearchOption.AllDirectories));
         Console.WriteLine("Files in " + ExampleTestProjectFolder + ": " + files);
         
 
