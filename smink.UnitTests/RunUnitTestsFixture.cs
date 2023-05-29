@@ -30,17 +30,22 @@ public class RunUnitTestsFixture: IAsyncLifetime
         Console.WriteLine("\n\n--------------------------------------------------");
         Console.WriteLine("Running example xUnit test assembly in: " + ExampleTestProjectFolder + "\n");
 
+        var files = string.Join(' ', Directory.GetFiles(ExampleTestProjectFolder));
+        Console.WriteLine("Files in " + ExampleTestProjectFolder + ": " + files);
+        
+
         var pi = new ProcessStartInfo("dotnet")
         {
             WorkingDirectory = ExampleTestProjectFolder,
             WindowStyle = ProcessWindowStyle.Normal,
-            CreateNoWindow = false,
+            CreateNoWindow = true,
             UseShellExecute = false,
             ArgumentList =
             {
                 "test",
-                "-v:q",
-                $"--logger:xunit;LogFilePath={_testResultsFilePattern}"
+                "-verbosity:q",
+                "-maxcpucount:1",
+                $"--logger:'xunit;LogFilePath={_testResultsFilePattern}'"
             }
         };
 
@@ -48,6 +53,17 @@ public class RunUnitTestsFixture: IAsyncLifetime
         if (process is { })
         {
             await process.WaitForExitAsync();
+            var exitCode = process.ExitCode;
+//             if (exitCode != 0)
+//             {
+//                 throw new ApplicationException(
+//                         $@"Unexpected exit code when running tests: {exitCode}.
+// Working directory: {pi.WorkingDirectory}
+// Command: {pi.FileName}
+// Arguments: {string.Join(' ', pi.ArgumentList)}
+// "
+//                         );
+//             }
         }
         
         Console.WriteLine("\nDone.");
