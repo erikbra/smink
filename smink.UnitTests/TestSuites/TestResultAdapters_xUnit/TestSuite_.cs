@@ -1,14 +1,13 @@
 using FluentAssertions;
 using smink.Models.Report;
 using smink.Models.XUnit;
-using smink.TestResultAdapters;
-using smink.TestResultReaders;
 
 // ReSharper disable InconsistentNaming
 
 namespace smink.UnitTests.TestSuites.TestResultAdapters_xUnit;
 
-public class TestSuite_: IClassFixture<RunUnitTestsFixture>
+[Collection(nameof(RunUnitTestsFixture))]
+public class TestSuite_
 {
     private readonly Assemblies? _testResults;
     private readonly TestReport? _report;
@@ -16,13 +15,8 @@ public class TestSuite_: IClassFixture<RunUnitTestsFixture>
 
     public TestSuite_(RunUnitTestsFixture fixture)
     {
-        var xunit = new XUnitResultsReader();
-        var testReport = new XUnitResultsAdapter();
-
-        var load = xunit.Load(fixture.TestResultsFiles.First());
-        load.Wait();
-        _testResults = load.Result;
-        _report = testReport.Read(_testResults);
+        _testResults = fixture.Assemblies;
+        _report = fixture.TestReport;
 
         _testSuite = _report!.TestSuites.Skip(1).FirstOrDefault();
     }

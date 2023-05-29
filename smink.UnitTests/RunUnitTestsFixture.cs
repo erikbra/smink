@@ -1,14 +1,26 @@
 using System.Diagnostics;
+using smink.Models.Report;
+using smink.Models.XUnit;
+using smink.TestResultAdapters;
+using smink.TestResultReaders;
 
 namespace smink.UnitTests;
+
+[CollectionDefinition(nameof(RunUnitTestsFixture))]
+public class RunUnitTestsFixtureCollection : ICollectionFixture<RunUnitTestsFixture>
+{ }
 
 public class RunUnitTestsFixture: IAsyncLifetime
 {
     public string ExampleTestProjectFolder { get; }
     public string TestResultsFolder { get; }
     public IEnumerable<string> TestResultsFiles => Directory.GetFiles(TestResultsFolder, "*.test_result.xml");
-    
-    private string _testResultsFilePattern { get; set; }
+    public Assemblies? Assemblies { get; set; }
+    public TestReport? TestReport { get; set; }
+
+    private readonly string _testResultsFilePattern;
+    private readonly XUnitResultsReader _xunit;
+    private readonly XUnitResultsAdapter _xUnitResultsAdapter;
 
     public RunUnitTestsFixture()
     {
@@ -23,6 +35,51 @@ public class RunUnitTestsFixture: IAsyncLifetime
         }
         
         _testResultsFilePattern = Path.Combine(TestResultsFolder, "{assembly}.test_result.xml");
+        
+        _xunit = new XUnitResultsReader();
+        _xUnitResultsAdapter = new XUnitResultsAdapter();
+    }
+  
+    public async Task InitializeAsync()
+    {
+        await RunXunitTests();
+        await LoadResults();
+        LoadTestReportData();
+    }
+
+    private void LoadTestReportData()
+    {
+       TestReport = _xUnitResultsAdapter.Read(Assemblies);
+    }
+
+    private async Task LoadResults()
+    {
+        Assemblies = await _xunit.Load(TestResultsFiles.ToArray());
+    }
+
+
+    private async Task RunXunitTests()
+    {
+        var pi = new ProcessStartInfo("dotnet")
+        {
+            WorkingDirectory = ExampleTestProjectFolder,
+            WindowStyle = ProcessWindowStyle.Normal,
+            CreateNoWindow = true,
+            UseShellExecute = false,
+            ArgumentList =
+            {
+                "test",
+                "-verbosity:q",
+                "-maxcpucount:1",
+                $"--logger:xunit;LogFilePath={_testResultsFilePattern}"
+            }
+        };
+
+        var process = Process.Start(pi);
+        if (process is { })
+        {
+            await process.WaitForExitAsync();
+        }
     }
 
     private static string FindExampleTestProjectFolder(string here)
@@ -47,51 +104,6 @@ public class RunUnitTestsFixture: IAsyncLifetime
         return Path.GetFullPath(folderToFind, currentFolder.FullName);
     }
 
-
-    public async Task InitializeAsync()
-    {
-        Console.WriteLine("\n\n--------------------------------------------------");
-        Console.WriteLine("Running example xUnit test assembly in: " + ExampleTestProjectFolder + "\n");
-
-        var files = string.Join('\n', Directory.GetFiles(ExampleTestProjectFolder, "*", SearchOption.AllDirectories));
-        Console.WriteLine("Files in " + ExampleTestProjectFolder + ": " + files);
-        
-
-        var pi = new ProcessStartInfo("dotnet")
-        {
-            WorkingDirectory = ExampleTestProjectFolder,
-            WindowStyle = ProcessWindowStyle.Normal,
-            CreateNoWindow = true,
-            UseShellExecute = false,
-            ArgumentList =
-            {
-                "test",
-                "-verbosity:q",
-                "-maxcpucount:1",
-                $"--logger:xunit;LogFilePath={_testResultsFilePattern}"
-            }
-        };
-
-        var process = Process.Start(pi);
-        if (process is { })
-        {
-            await process.WaitForExitAsync();
-            var exitCode = process.ExitCode;
-//             if (exitCode != 0)
-//             {
-//                 throw new ApplicationException(
-//                         $@"Unexpected exit code when running tests: {exitCode}.
-// Working directory: {pi.WorkingDirectory}
-// Command: {pi.FileName}
-// Arguments: {string.Join(' ', pi.ArgumentList)}
-// "
-//                         );
-//             }
-        }
-        
-        Console.WriteLine("\nDone.");
-        Console.WriteLine("--------------------------------------------------\n\n");
-    }
 
     public Task DisposeAsync()
     {

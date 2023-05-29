@@ -9,20 +9,16 @@ using smink.TestResultReaders;
 
 namespace smink.UnitTests.TestSuites.TestResultAdapters_xUnit;
 
-public class TestReport_: IClassFixture<RunUnitTestsFixture>
+[Collection(nameof(RunUnitTestsFixture))]
+public class TestReport_
 {
     private readonly Assemblies? _testResults;
     private readonly TestReport? _report;
 
     public TestReport_(RunUnitTestsFixture fixture)
     {
-        var xunit = new XUnitResultsReader();
-        var testReport = new XUnitResultsAdapter();
-
-        var load = xunit.Load(fixture.TestResultsFiles.First());
-        load.Wait();
-        _testResults = load.Result;
-        _report = testReport.Read(_testResults);
+        _testResults = fixture.Assemblies;
+        _report = fixture.TestReport;
     }
     
     [Fact]
@@ -52,7 +48,7 @@ public class TestReport_: IClassFixture<RunUnitTestsFixture>
         using (new AssertionScope())
         {
             var testSuites = _report!.TestSuites.ToList();
-            testSuites.Should().HaveCount(3);
+            testSuites.Should().HaveCount(4);
             testSuites.First().Name.Should().Be("xUnit.ExampleTests.Set1");
             testSuites.Skip(1).First().Name.Should().Be("Adding_a_new_customer");
             testSuites.Skip(2).First().Name.Should().Be("Buying_a_product");

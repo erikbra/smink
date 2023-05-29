@@ -7,7 +7,8 @@ using smink.TestResultReaders;
 
 namespace smink.UnitTests.TestSuites.TestResultAdapters_xUnit;
 
-public class TestRun_: IClassFixture<RunUnitTestsFixture>
+[Collection(nameof(RunUnitTestsFixture))]
+public class TestRun_
 {
     private readonly TestRun _passedTest;
     private readonly TestRun _skippedTest;
@@ -15,13 +16,7 @@ public class TestRun_: IClassFixture<RunUnitTestsFixture>
 
     public TestRun_(RunUnitTestsFixture fixture)
     {
-        var xunit = new XUnitResultsReader();
-        var testReport = new XUnitResultsAdapter();
-
-        var load = xunit.Load(fixture.TestResultsFiles.First());
-        load.Wait();
-        var testResults = load.Result;
-        var report = testReport.Read(testResults);
+        var report = fixture.TestReport;
 
         var testSuite = report!.TestSuites.Skip(1).FirstOrDefault();
         IEnumerable<TestScenario> scenarios = testSuite!.TestScenarios.ToList();
