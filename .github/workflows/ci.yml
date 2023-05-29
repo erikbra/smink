@@ -23,11 +23,19 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 8.0.x
-    - name: List files
-      run: pwd; ls -lR
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity quiet --logger:"xunit;LogFilePath={assembly}.testresults.xml" smink.UnitTests
+      run: dotnet test --no-build --verbosity quiet --logger:"xunit;LogFilePath=TestResults/smink.UnitTests.testresults.xml" smink.UnitTests
+    
+    - name: Create test report (dogfooding)
+      if: always()
+      run: dotnet run --project smink -- ./TestResults/smink.UnitTests.testresults.xml ./TestResults/smink.UnitTests.testresults.html
+    - name: Upload test report
+      if: always()
+      uses: actions/upload-artifact@v2
+      with: 
+        name: test-report
+        path: TestResults
