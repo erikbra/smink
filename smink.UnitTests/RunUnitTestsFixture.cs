@@ -13,6 +13,8 @@ public class RunUnitTestsFixture: IAsyncLifetime
     public RunUnitTestsFixture()
     {
         var here = Path.GetFullPath(Directory.GetCurrentDirectory());
+        Console.WriteLine("Current directory: " + here);
+        
         ExampleTestProjectFolder =  Path.GetFullPath("../../../../ExampleTestProjects/xunit.ExampleTests", here);
         TestResultsFolder = Path.Combine(ExampleTestProjectFolder, "TestResults");
 
