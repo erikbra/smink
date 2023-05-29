@@ -41,7 +41,7 @@ var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
     };
     
     var parameters = ParameterView.FromDictionary(dictionary);
-    var output = await htmlRenderer.RenderComponentAsync<XUnitTemplate>(parameters);
+    var output = await htmlRenderer.RenderComponentAsync<DefaultTestReportTemplate>(parameters);
     return output.ToHtmlString();
 });
 

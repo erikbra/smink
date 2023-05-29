@@ -9,6 +9,8 @@ public class TestRun
     public string? Method { get; set; }
     public string? Name { get; set; }
     public string? DisplayName { get; set; }
+    public string SanitizedName => Common.Sanitize(Name ?? Id.ToString());
+    
     public string? Result { get; set; }
     public string? SourceFile { get; set; }
     public string? SourceLine { get; set; }
@@ -20,6 +22,4 @@ public class TestRun
     
 
     public bool HasContent => Failure is {} || Reason is {} || Output is {};
-    public string SanitizedName => UrlEncoder.Default.Encode(Name ?? Id.ToString()).Replace("%20", "_");
-    
 }

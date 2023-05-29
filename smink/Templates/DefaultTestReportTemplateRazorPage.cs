@@ -3,7 +3,7 @@ using smink.Models.Report;
 
 namespace smink.Templates;
 
-public class XUnitTemplateRazorPage: ComponentBase
+public class DefaultTestReportTemplateRazorPage: ComponentBase
 {
     [Parameter] public TestReport TestReport { get; set; } = new();
     
