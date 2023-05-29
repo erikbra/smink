@@ -30,4 +30,4 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity quiet smink.UnitTests
+      run: dotnet test --no-build --verbosity quiet --logger:"xunit;LogFilePath={assembly}.testresults.xml" smink.UnitTests
