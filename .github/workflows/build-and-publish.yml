@@ -110,7 +110,7 @@ jobs:
         #         "alpine-x64", "linux-x64", "linux-arm", "linux-arm64",
         #         "osx-x64", "osx.11.0-x64", "osx.11.0-arm64", "osx.12-x64", "osx.12-arm64", "osx.13-x64", "osx.13-arm64"
         #       ]
-        arch: [ "linux-x64", "linux-arm64" ]
+        arch: [ "linux-x64" ]
 
     steps:
     - uses: actions/checkout@v3
