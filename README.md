@@ -7,7 +7,7 @@ Smink is a test reporting tool (for now it converts xUnit test logs to pretty HT
 1. In the root folder, run:
 
 ```bash
-$ dotnet test ExampleTestProjects/xUnit.ExampleTests/xUnit.ExampleTests.sln --logger:"xunit;LogFilePath=/tmp/smink/{assembly}.testresults.xml"
+$ dotnet test ExampleTestProjects/xUnit.ExampleTests/xUnit.ExampleTests.sln --logger:"xunit;LogFilePath=/tmp/logs/{assembly}.testresults.xml"
 $ dotnet run --project smink -- /tmp/logs/*.xml /tmp/logs/testreport.html
 $ open /tmp/logs/testreport.html
 ```
