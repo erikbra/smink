@@ -1,4 +1,5 @@
 # Heavyweight build and test
+
 name: Build and Publish
 
 on:
@@ -16,8 +17,8 @@ jobs:
     outputs:
       nuGetVersion: ${{ steps.gitversion.outputs.nuGetVersionV2 }}
       semVer: ${{ steps.gitversion.outputs.fullSemVer }}
-      #is-release: ${{ steps.gitversion.outputs.CommitsSinceVersionSource == 0 }}
-      is-release: 'true'
+      is-release: ${{ steps.gitversion.outputs.CommitsSinceVersionSource == 0 }}
+      #is-release: 'true'
     
     steps:
     - name: Setup .NET 8
@@ -36,11 +37,48 @@ jobs:
       id: gitversion
       uses: gittools/actions/gitversion/execute@v0.10.2
 
-  build-netcore-tool:
-    needs: set-version-number
-    name: Build .NET Core (global) tool
+  # build-netcore-tool:
+  #   needs: set-version-number
+  #   name: Build .NET Core (global) tool
 
-    runs-on: ubuntu-latest
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - name: Setup .NET 8
+  #     uses: actions/setup-dotnet@v3
+  #     with:
+  #       dotnet-version: 8.0.x
+  #   - name: Restore dependencies
+  #     run: dotnet restore
+  #   - name: Build
+  #     run: dotnet pack ./smink/smink.csproj -c release -p:PackAsTool=true -p:PackageOutputPath=/tmp/smink/nupkg
+  #     env:
+  #       VERSION: ${{ needs.set-version-number.outputs.nuGetVersion }}
+      
+  #   - name: Upload published tool artifact
+  #     uses: actions/upload-artifact@v3
+  #     if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
+  #     with:
+  #       name: smink-dotnet-tool-${{ needs.set-version-number.outputs.nuGetVersion }}
+  #       path: /tmp/smink/nupkg/*   
+
+    # - name: Push to Nuget.org
+    #   if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
+    #   run: dotnet nuget push /tmp/smink/nupkg/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{secrets.NUGET_ORG_KEY}} --skip-duplicate
+
+  build-standalone-win:
+    name: Build Windows
+    needs: set-version-number
+
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        # arch: [ "win-x64", "win-x86", "win-arm", "win-arm64", 
+        #         "alpine-x64", "linux-x64", "linux-arm", "linux-arm64",
+        #         "osx-x64", "osx.11.0-x64", "osx.11.0-arm64", "osx.12-x64", "osx.12-arm64", "osx.13-x64", "osx.13-arm64"
+        #       ]
+        arch: [ "win-x64", "win-arm64" ]
 
     steps:
     - uses: actions/checkout@v3
@@ -48,35 +86,63 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 8.0.x
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet pack ./smink/smink.csproj -c release -p:PackAsTool=true -p:PackageOutputPath=/tmp/smink/nupkg
+
+    - name: Publish self-contained ${{ matrix.arch }}
+      run: dotnet publish ./smink/smink.csproj -r ${{ matrix.arch }} -c release --self-contained -p:SelfContained=true -o ./publish/${{ matrix.arch }}/self-contained
       env:
         VERSION: ${{ needs.set-version-number.outputs.nuGetVersion }}
-      
-    - name: Upload published tool artifact
-      uses: actions/upload-artifact@v3
+
+    - name: Upload self-contained ${{ matrix.arch }}
       if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
+      uses: actions/upload-artifact@v3
       with:
-        name: smink-dotnet-tool-${{ needs.set-version-number.outputs.nuGetVersion }}
-        path: /tmp/smink/nupkg/*   
+        name: smink-${{ matrix.arch }}-self-contained-${{ needs.set-version-number.outputs.nuGetVersion }}
+        path: ./publish/${{ matrix.arch }}/self-contained/*
 
-    # - name: Push to Nuget.org
-    #   if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
-    #   run: dotnet nuget push /tmp/smink/nupkg/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{secrets.NUGET_ORG_KEY}} --skip-duplicate
-
-  build-standalone:
-    name: Build
+  build-standalone-linux:
+    name: Build Linux
     needs: set-version-number
 
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [ "win-x64", "win-x86", "win-arm", "win-arm64", 
-                "alpine-x64", "linux-x64", "linux-arm", "linux-arm64",
-                "osx-x64", "osx.11.0-x64", "osx.11.0-arm64", "osx.12-x64", "osx.12-arm64", "osx.13-x64", "osx.13-arm64"
-              ]
+        # arch: [ "win-x64", "win-x86", "win-arm", "win-arm64", 
+        #         "alpine-x64", "linux-x64", "linux-arm", "linux-arm64",
+        #         "osx-x64", "osx.11.0-x64", "osx.11.0-arm64", "osx.12-x64", "osx.12-arm64", "osx.13-x64", "osx.13-arm64"
+        #       ]
+        arch: [ "linux-x64" ]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET 8
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Publish self-contained ${{ matrix.arch }}
+      run: dotnet publish ./smink/smink.csproj -r ${{ matrix.arch }} -c release --self-contained -p:SelfContained=true -o ./publish/${{ matrix.arch }}/self-contained
+      env:
+        VERSION: ${{ needs.set-version-number.outputs.nuGetVersion }}
+
+    - name: Upload self-contained ${{ matrix.arch }}
+      if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: smink-${{ matrix.arch }}-self-contained-${{ needs.set-version-number.outputs.nuGetVersion }}
+        path: ./publish/${{ matrix.arch }}/self-contained/*
+
+  build-standalone-macos:
+    name: Build macOS
+    needs: set-version-number
+
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        # arch: [ "win-x64", "win-x86", "win-arm", "win-arm64", 
+        #         "alpine-x64", "linux-x64", "linux-arm", "linux-arm64",
+        #         "osx-x64", "osx.11.0-x64", "osx.11.0-arm64", "osx.12-x64", "osx.12-arm64", "osx.13-x64", "osx.13-arm64"
+        #       ]
+        arch: [ "osx-x64", "osx.11.0-x64", "osx.11.0-arm64", "osx.12-x64", "osx.12-arm64", "osx.13-x64", "osx.13-arm64" ]
 
     steps:
     - uses: actions/checkout@v3
