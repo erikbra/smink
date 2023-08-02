@@ -53,7 +53,7 @@ public class TestRun_
     [Fact]
     public void Skipped_test_has_correct_Reason() => _skippedTest.Reason.Should().Be("This might be too expensive");
     
-    [Fact]
+    [Fact(Skip = "Xunit reporter 3.1.* -> doesn't fill out the Output, only the Reason")]
     public void Skipped_test_has_correct_Output() => _skippedTest.Output.Should().Be(@"This might be too expensive
 ");
 
