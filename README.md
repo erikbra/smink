@@ -12,7 +12,7 @@ $ dotnet run --project smink -- /tmp/logs/*.xml /tmp/logs/testreport.html
 $ open /tmp/logs/testreport.html
 ```
 
-And, view the beatiful HTML report, showing all run tests.
+And, view the beautiful HTML report, showing all run tests.
 
 ![image](https://github.com/erikbra/smink/assets/1628994/72555c58-92f6-4670-9b75-27cf01734833)
 
