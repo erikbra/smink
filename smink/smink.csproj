@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -19,7 +19,7 @@
    </PropertyGroup>
 
    <ItemGroup>
-     <PackageReference Include="Microsoft.AspNetCore.Components" Version="8.0.0-preview.4.23260.4" />
+     <PackageReference Include="Microsoft.AspNetCore.Components" Version="8.0.0-preview.6.23329.11" />
      <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0-preview.4.23260.4" />
      <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0-preview.4.23259.5" />
 <!--     <PackageReference Include="Microsoft.XmlSerializer.Generator" Version="8.0.0-preview.4.23259.5" />-->
