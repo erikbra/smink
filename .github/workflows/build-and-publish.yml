@@ -97,7 +97,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: smink-${{ matrix.arch }}-${{ needs.set-version-number.outputs.nuGetVersion }}
-        path: ./publish/${{ matrix.arch }}/smink
+        path: ./publish/${{ matrix.arch }}/smink.exe
 
   build-standalone-linux:
     name: Build Linux
