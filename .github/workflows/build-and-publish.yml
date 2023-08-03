@@ -17,8 +17,8 @@ jobs:
     outputs:
       nuGetVersion: ${{ steps.gitversion.outputs.nuGetVersionV2 }}
       semVer: ${{ steps.gitversion.outputs.fullSemVer }}
-      is-release: ${{ steps.gitversion.outputs.CommitsSinceVersionSource == 0 }}
-      #is-release: 'true'
+      #is-release: ${{ steps.gitversion.outputs.CommitsSinceVersionSource == 0 }}
+      is-release: 'true'
     
     steps:
     - name: Setup .NET 8
@@ -87,17 +87,17 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    - name: Publish self-contained ${{ matrix.arch }}
-      run: dotnet publish ./smink/smink.csproj -r ${{ matrix.arch }} -c release --self-contained -p:SelfContained=true -o ./publish/${{ matrix.arch }}/self-contained
+    - name: Publish ${{ matrix.arch }}
+      run: dotnet publish ./smink/smink.csproj -r ${{ matrix.arch }} -c release --self-contained -p:SelfContained=true -o ./publish/${{ matrix.arch }}
       env:
         VERSION: ${{ needs.set-version-number.outputs.nuGetVersion }}
 
-    - name: Upload self-contained ${{ matrix.arch }}
+    - name: Upload ${{ matrix.arch }}
       if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
       uses: actions/upload-artifact@v3
       with:
-        name: smink-${{ matrix.arch }}-self-contained-${{ needs.set-version-number.outputs.nuGetVersion }}
-        path: ./publish/${{ matrix.arch }}/self-contained/*
+        name: smink-${{ matrix.arch }}-${{ needs.set-version-number.outputs.nuGetVersion }}
+        path: ./publish/${{ matrix.arch }}/smink
 
   build-standalone-linux:
     name: Build Linux
@@ -119,17 +119,17 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    - name: Publish self-contained ${{ matrix.arch }}
-      run: dotnet publish ./smink/smink.csproj -r ${{ matrix.arch }} -c release --self-contained -p:SelfContained=true -o ./publish/${{ matrix.arch }}/self-contained
+    - name: Publish ${{ matrix.arch }}
+      run: dotnet publish ./smink/smink.csproj -r ${{ matrix.arch }} -c release --self-contained -p:SelfContained=true -o ./publish/${{ matrix.arch }}
       env:
         VERSION: ${{ needs.set-version-number.outputs.nuGetVersion }}
 
-    - name: Upload self-contained ${{ matrix.arch }}
+    - name: Upload ${{ matrix.arch }}
       if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
       uses: actions/upload-artifact@v3
       with:
-        name: smink-${{ matrix.arch }}-self-contained-${{ needs.set-version-number.outputs.nuGetVersion }}
-        path: ./publish/${{ matrix.arch }}/self-contained/*
+        name: smink-${{ matrix.arch }}-${{ needs.set-version-number.outputs.nuGetVersion }}
+        path: ./publish/${{ matrix.arch }}/smink
 
   build-standalone-macos:
     name: Build macOS
@@ -151,17 +151,17 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    - name: Publish self-contained ${{ matrix.arch }}
-      run: dotnet publish ./smink/smink.csproj -r ${{ matrix.arch }} -c release --self-contained -p:SelfContained=true -o ./publish/${{ matrix.arch }}/self-contained
+    - name: Publish ${{ matrix.arch }}
+      run: dotnet publish ./smink/smink.csproj -r ${{ matrix.arch }} -c release --self-contained -p:SelfContained=true -o ./publish/${{ matrix.arch }}
       env:
         VERSION: ${{ needs.set-version-number.outputs.nuGetVersion }}
 
-    - name: Upload self-contained ${{ matrix.arch }}
+    - name: Upload ${{ matrix.arch }}
       if: ${{ needs.set-version-number.outputs.is-release == 'true' }}
       uses: actions/upload-artifact@v3
       with:
-        name: smink-${{ matrix.arch }}-self-contained-${{ needs.set-version-number.outputs.nuGetVersion }}
-        path: ./publish/${{ matrix.arch }}/self-contained/*
+        name: smink-${{ matrix.arch }}-${{ needs.set-version-number.outputs.nuGetVersion }}
+        path: ./publish/${{ matrix.arch }}/smink
     
   
   # build-msi:
@@ -179,7 +179,7 @@ jobs:
   #   - uses: actions/checkout@v3
   #   - uses: actions/download-artifact@v3
   #     with:
-  #       name: smink-${{ matrix.arch }}-self-contained-${{ needs.set-version-number.outputs.nuGetVersion }}
+  #       name: smink-${{ matrix.arch }}-${{ needs.set-version-number.outputs.nuGetVersion }}
   #       path: ${{ matrix.arch }}/
 
   #   - name: Create msi
@@ -210,7 +210,7 @@ jobs:
   #   - uses: actions/checkout@v3
   #   - uses: actions/download-artifact@v3
   #     with:
-  #       name: grate-alpine-x64-self-contained-${{ needs.set-version-number.outputs.nuGetVersion }}
+  #       name: grate-alpine-x64-${{ needs.set-version-number.outputs.nuGetVersion }}
   #       path: installers/docker/
         
 
@@ -257,7 +257,7 @@ jobs:
   #   - uses: actions/checkout@v3
   #   - uses: actions/download-artifact@v3
   #     with:
-  #       name: smink-${{ matrix.arch }}-self-contained-${{ needs.set-version-number.outputs.nuGetVersion }}
+  #       name: smink-${{ matrix.arch }}-${{ needs.set-version-number.outputs.nuGetVersion }}
   #       path: ${{ matrix.arch }}/
 
   #   - id: get-arch
