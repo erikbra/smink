@@ -68,9 +68,9 @@ Actual:   False");
     
     [Fact]
     public void Failed_test_has_correct_Failure_StackTrace() => _failedTest.Failure!.StackTrace.Should().Be(
-$@"   at xUnit.ExampleTests.Set1.TestSuites.Adding_a_new_customer.When_the_customer_is_too_old.We_make_them_happy() in {_fixture.ExampleTestProjectFolder}/xUnit.ExampleTests.Set1/TestSuites/Adding_a_new_customer/When_the_customer_is_too_old.cs:line 12
+$@"   at xUnit.ExampleTests.Set1.TestSuites.Adding_a_new_customer.When_the_customer_is_too_old.We_make_them_happy() in /Users/erik/src/Repos/erikbra/smink/ExampleTestProjects/xUnit.ExampleTests/xUnit.ExampleTests.Set1/TestSuites/Adding_a_new_customer/When_the_customer_is_too_old.cs:line 12
    at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
-   at System.Reflection.MethodInvoker.Invoke(Object obj, IntPtr* args, BindingFlags invokeAttr)");
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)");
     
     
 }
