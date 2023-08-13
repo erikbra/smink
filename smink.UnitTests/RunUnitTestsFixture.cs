@@ -92,7 +92,7 @@ public class RunUnitTestsFixture: IAsyncLifetime
         do
         {
             currentFolder = currentFolder.Parent;
-            var directories = currentFolder.GetDirectories(folderToFind);
+            var directories = currentFolder!.GetDirectories(folderToFind);
             found = directories.Length != 0;
         } while (!found && currentFolder != currentFolder.Root);
 
