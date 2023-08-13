@@ -40,7 +40,7 @@
             <span style="font-weight:600;">
                 Test
             </span>
-            Result
+            Result @TestReport.Timestamp!.Value.ToString("U")
         </span>
         <div>
             <div class="ui active indicating progress" data-percent="@(TestReport.SuccessRate)" style="margin-top:10px;">
