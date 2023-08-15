@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Globalization;
 using smink.Models.Report;
 using smink.Models.XUnit;
@@ -11,6 +12,9 @@ public class XUnitResultsAdapter
 {
     public TestReport? Read(Assemblies? assemblies)
     {
+        var testSuites = (assemblies ?? new Assemblies())
+                                .AssembliesList.Select(GetTestSuites).SelectMany(suite => suite).ToArray();
+        
         return assemblies switch
         {
             { } => new TestReport()
@@ -19,7 +23,11 @@ public class XUnitResultsAdapter
                     Timestamp = TryParse(assemblies.Timestamp),
                     Computer = assemblies.Computer,
                     User = assemblies.User,
-                    TestSuites = assemblies.AssembliesList.Select(GetTestSuites).SelectMany(suite => suite)
+                    TestSuites = testSuites,
+                    TotalTests = testSuites.Sum(a => a.Total),
+                    TotalErrors = testSuites.Sum(a => a.Errors),
+                    TotalFailures = testSuites.Sum(a => a.Failed),
+                    TotalSuccessful = testSuites.Sum(a => a.Passed)
                 },
             _ => null
         };
@@ -106,7 +114,7 @@ public class XUnitResultsAdapter
         
         return new  TestSuite
         {
-            Id = arg.Id,
+            Id = (arg.Id ?? Guid.NewGuid()).ToString(),
             Name = testSuiteName,
             DisplayName = displayName,
             RootNamespace = rootNamespace,

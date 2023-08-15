@@ -35,8 +35,10 @@
     <ProjectReference Include="..\smink\smink.csproj" />
   </ItemGroup>
 
+
   <ItemGroup>
-    <Folder Include="TestSuites\" />
+    <Folder Include="TestSuites\NUnit\" />
+    <Folder Include="TestSuites\xUnit\" />
   </ItemGroup>
 
 </Project>

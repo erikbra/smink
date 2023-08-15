@@ -2,14 +2,14 @@ using System.Globalization;
 using FluentAssertions;
 using smink.Models.XUnit;
 
-namespace smink.UnitTests.TestSuites.TestResultReaders_xUnit;
+namespace smink.UnitTests.TestSuites.xUnit.TestResultReaders;
 
-[Collection(nameof(RunUnitTestsFixture))]
+[Collection(nameof(RunXUnitTestsFixture))]
 public class Assemblies_
 {
     private readonly Assemblies? _results;
 
-    public Assemblies_(RunUnitTestsFixture fixture)
+    public Assemblies_(RunXUnitTestsFixture fixture)
     {
         _results = fixture.Assemblies;
     }
