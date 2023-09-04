@@ -26,7 +26,7 @@ jobs:
       with:
         dotnet-version: 8.0.100-preview.7.23376.3
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Install GitVersion
@@ -44,7 +44,7 @@ jobs:
   #   runs-on: ubuntu-latest
 
   #   steps:
-  #   - uses: actions/checkout@v3
+  #   - uses: actions/checkout@v4
   #   - name: Setup .NET 8
   #     uses: actions/setup-dotnet@v3
   #     with:
@@ -81,7 +81,7 @@ jobs:
         arch: [ "win-x64", "win-arm64" ]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Setup .NET 8
       uses: actions/setup-dotnet@v3
       with:
@@ -113,7 +113,7 @@ jobs:
         arch: [ "linux-x64" ]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Setup .NET 8
       uses: actions/setup-dotnet@v3
       with:
@@ -145,7 +145,7 @@ jobs:
         arch: [ "osx-x64", "osx.11.0-x64", "osx.11.0-arm64", "osx.12-x64", "osx.12-arm64", "osx.13-x64", "osx.13-arm64" ]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Setup .NET 8
       uses: actions/setup-dotnet@v3
       with:
@@ -176,7 +176,7 @@ jobs:
   #       arch: [ "win-x64", "win-arm64" ]
 
   #   steps:
-  #   - uses: actions/checkout@v3
+  #   - uses: actions/checkout@v4
   #   - uses: actions/download-artifact@v3
   #     with:
   #       name: smink-${{ matrix.arch }}-${{ needs.set-version-number.outputs.nuGetVersion }}
@@ -207,7 +207,7 @@ jobs:
   #     FULL_IMAGE_NAME: ${{ github.repository }}
 
   #   steps:
-  #   - uses: actions/checkout@v3
+  #   - uses: actions/checkout@v4
   #   - uses: actions/download-artifact@v3
   #     with:
   #       name: grate-alpine-x64-${{ needs.set-version-number.outputs.nuGetVersion }}
@@ -254,7 +254,7 @@ jobs:
   #       arch: [ "linux-arm", "linux-arm64", "linux-x64" ]
 
   #   steps:
-  #   - uses: actions/checkout@v3
+  #   - uses: actions/checkout@v4
   #   - uses: actions/download-artifact@v3
   #     with:
   #       name: smink-${{ matrix.arch }}-${{ needs.set-version-number.outputs.nuGetVersion }}
@@ -314,7 +314,7 @@ jobs:
 #         category: [ "Basic", "SqlServer", "PostgreSQL", "MariaDB", "Sqlite", "Oracle" ]
 
 #     steps:
-#     - uses: actions/checkout@v3
+#     - uses: actions/checkout@v4
 #     - name: Setup .NET 8
 #       uses: actions/setup-dotnet@v3
 #       with:
