@@ -26,7 +26,7 @@ public class Assemblies
     public string? User { get; set; }
     
     [XmlAttribute("id")]
-    public Guid Id { get; set; }
+    public string? Id { get; set; }
 
     [XmlElement("assembly")] 
     public List<Assembly> AssembliesList { get; set; } = new();

@@ -7,15 +7,15 @@ using smink.TestResultReaders;
 
 // ReSharper disable InconsistentNaming
 
-namespace smink.UnitTests.TestSuites.TestResultAdapters_xUnit;
+namespace smink.UnitTests.TestSuites.xUnit.TestResultAdapters;
 
-[Collection(nameof(RunUnitTestsFixture))]
+[Collection(nameof(RunXUnitTestsFixture))]
 public class TestReport_
 {
     private readonly Assemblies? _testResults;
     private readonly TestReport? _report;
 
-    public TestReport_(RunUnitTestsFixture fixture)
+    public TestReport_(RunXUnitTestsFixture fixture)
     {
         _testResults = fixture.Assemblies;
         _report = fixture.TestReport;
@@ -49,9 +49,12 @@ public class TestReport_
         {
             var testSuites = _report!.TestSuites.ToList();
             testSuites.Should().HaveCount(4);
-            testSuites.First().Name.Should().Be("xUnit.ExampleTests.Set1");
-            testSuites.Skip(1).First().Name.Should().Be("Adding_a_new_customer");
-            testSuites.Skip(2).First().Name.Should().Be("Buying_a_product");
+
+            var names = testSuites.Select(suite => suite.Name).ToArray();
+
+            names.Should().Contain("xUnit.ExampleTests.Set1");
+            names.Should().Contain("Adding_a_new_customer");
+            names.Should().Contain("Buying_a_product");
         }
     }
 }

@@ -6,15 +6,15 @@ using smink.TestResultReaders;
 
 namespace smink.UnitTests;
 
-[CollectionDefinition(nameof(RunUnitTestsFixture))]
-public class RunUnitTestsFixtureCollection : ICollectionFixture<RunUnitTestsFixture>
+[CollectionDefinition(nameof(RunXUnitTestsFixture))]
+public class RunXUnitTestsFixtureCollection : ICollectionFixture<RunXUnitTestsFixture>
 { }
 
-public class RunUnitTestsFixture: IAsyncLifetime
+public class RunXUnitTestsFixture: IAsyncLifetime
 {
     public string ExampleTestProjectFolder { get; }
     public string TestResultsFolder { get; }
-    public IEnumerable<string> TestResultsFiles => Directory.GetFiles(TestResultsFolder, "*.test_result.xml");
+    public IEnumerable<string> TestResultsFiles => Directory.GetFiles(TestResultsFolder, "*.xunit_test_result.xml");
     public Assemblies? Assemblies { get; set; }
     public TestReport? TestReport { get; set; }
 
@@ -22,7 +22,7 @@ public class RunUnitTestsFixture: IAsyncLifetime
     private readonly XUnitResultsReader _xunit;
     private readonly XUnitResultsAdapter _xUnitResultsAdapter;
 
-    public RunUnitTestsFixture()
+    public RunXUnitTestsFixture()
     {
         var here = Path.GetFullPath(Directory.GetCurrentDirectory());
         
@@ -34,7 +34,7 @@ public class RunUnitTestsFixture: IAsyncLifetime
             Directory.CreateDirectory(TestResultsFolder);
         }
         
-        _testResultsFilePattern = Path.Combine(TestResultsFolder, "{assembly}.test_result.xml");
+        _testResultsFilePattern = Path.Combine(TestResultsFolder, "{assembly}.xunit_test_result.xml");
         
         _xunit = new XUnitResultsReader();
         _xUnitResultsAdapter = new XUnitResultsAdapter();

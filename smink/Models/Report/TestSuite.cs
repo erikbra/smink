@@ -4,7 +4,7 @@ public class TestSuite
 {
     public IEnumerable<TestScenario> TestScenarios { get; set; } = new List<TestScenario>();
     
-    public Guid Id { get; set;  }
+    public string? Id { get; set;  }
     public string? Name { get; set; }
     public string? DisplayName { get; set; }
     public string SanitizedName => Common.Sanitize(Name ?? Id.ToString());

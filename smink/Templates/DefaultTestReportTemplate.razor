@@ -38,9 +38,9 @@
     <div class="content">
         <span style="font-size:30px; font-weight:300; font-family:Open Sans;">
             <span style="font-weight:600;">
-                Test
+                @TestReport.Title
             </span>
-            Result @TestReport.Timestamp!.Value.ToString("U")
+            @TestReport.Timestamp?.ToString("U")
         </span>
         <div>
             <div class="ui active indicating progress" data-percent="@(TestReport.SuccessRate)" style="margin-top:10px;">

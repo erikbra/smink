@@ -33,7 +33,28 @@ jobs:
     - name: Create test report (dogfooding)
       if: always()
       run: |
-        dotnet run --project smink -- ./TestResults/smink.UnitTests.testresults.xml ./TestResults/smink.UnitTests.testresults.html
+        dotnet run --project smink -- \
+          --title "Test report Smink" \
+          ./TestResults/smink.UnitTests.testresults.xml \
+          ./TestResults/smink.UnitTests.testresults.html
+
+    - name: Create xUnit ExampleTests report (dogfooding)
+      if: always()
+      run: |
+        dotnet run --project smink -- \
+          --title "xUnit Example test report" \
+          ./ExampleTestProjects/xUnit.ExampleTests/TestResults/*.xml \
+          ./TestResults/xUnit.ExampleTests.testresults.html
+
+    - name: Create NUnit ExampleTests report (dogfooding)
+      if: always()
+      run: |
+        dotnet run --project smink -- \
+          --title "NUnit Example test report" \
+          ./ExampleTestProjects/NUnit.ExampleTests/TestResults/*.xml \
+          ./TestResults/NUnit.ExampleTests.testresults.html
+
+    
 #        echo '<![CDATA[' > $GITHUB_STEP_SUMMARY
 #        cat ./TestResults/smink.UnitTests.testresults.html >> $GITHUB_STEP_SUMMARY
 #        echo ']]>' >> $GITHUB_STEP_SUMMARY

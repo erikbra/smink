@@ -5,7 +5,7 @@ namespace smink.Models.XUnit;
 public record Assembly()
 {
     [XmlAttribute("id")]
-    public Guid Id { get; set;  }
+    public Guid? Id { get; set;  }
     
     [XmlAttribute("name")]
     public string? Name { get; set; }

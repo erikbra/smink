@@ -399,5 +399,5 @@ FodyWeavers.xsd
 .idea
 
 # Code folders containing excluded patterns
-!TestResultReaders_*
-!TestResultAdapters_*
+!TestResultReaders*
+!TestResultAdapters*

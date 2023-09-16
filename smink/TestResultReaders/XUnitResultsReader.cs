@@ -2,12 +2,17 @@ using System.Globalization;
 using System.Xml.Linq;
 using smink.Models.XUnit;
 
+using static smink.TestResultReaders.XmlUtils;
+
 namespace smink.TestResultReaders;
 
 // https://xunit.net/docs/format-xml-v2
 
 public class XUnitResultsReader
 {
+
+    public Task<Assemblies?> Load(IEnumerable<string> files) => Load(files.ToArray());
+    
     public async Task<Assemblies?> Load(params string[] files)
     {
         var ct = new CancellationToken();
@@ -44,7 +49,7 @@ public class XUnitResultsReader
         {
             { } root => new Assemblies()
                 {
-                    Id = GetAttribute<Guid>(root, "id"),
+                    Id = GetAttribute<string>(root, "id"),
                     SchemaVersion = GetAttribute<int>(root, "schema-version"),
                     Computer = GetAttribute(root, "computer"),
                     User = GetAttribute(root, "user"),
@@ -178,27 +183,6 @@ public class XUnitResultsReader
         };
     }
 
-    private static string? GetAttribute(XElement? elem, string name)
-    {
-        return elem?.Attribute(XName.Get(name))?.Value;
-    }
-    
-    private static T? GetAttribute<T>(XElement? elem, string name) where T: IParsable<T>
-    {
-        return GetAttribute(elem, name) switch
-        {
-            { } val => T.Parse(val, CultureInfo.InvariantCulture),
-            _ => default
-        };
-    }
-    
-    private static T? GetEnumAttribute<T>(XElement? elem, string name) where T: struct, Enum
-    {
-        return GetAttribute(elem, name) switch
-        {
-            { } val => Enum.Parse<T>(val),
-            _ => default
-        };
-    }
+   
 
 }

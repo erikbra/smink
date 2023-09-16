@@ -5,27 +5,27 @@ using smink.TestResultReaders;
 
 // ReSharper disable InconsistentNaming
 
-namespace smink.UnitTests.TestSuites.TestResultAdapters_xUnit;
+namespace smink.UnitTests.TestSuites.xUnit.TestResultAdapters;
 
-[Collection(nameof(RunUnitTestsFixture))]
+[Collection(nameof(RunXUnitTestsFixture))]
 public class TestRun_
 {
     private readonly TestRun _passedTest;
     private readonly TestRun _skippedTest;
     private readonly TestRun _failedTest;
-    private readonly RunUnitTestsFixture _fixture;
+    private readonly RunXUnitTestsFixture _fixture;
 
-    public TestRun_(RunUnitTestsFixture fixture)
+    public TestRun_(RunXUnitTestsFixture fixture)
     {
         var report = fixture.TestReport;
 
         _fixture = fixture;
 
-        var testSuite = report!.TestSuites.Skip(1).FirstOrDefault();
-        IEnumerable<TestScenario> scenarios = testSuite!.TestScenarios.ToList();
+        var testSuite = report!.TestSuites.SingleOrDefault(s => "Adding a new customer".Equals(s.DisplayName));
+        TestScenario[] scenarios = testSuite!.TestScenarios.ToArray();
 
-        var withSkipped = scenarios.First();
-        var withFailed = scenarios.Skip(1).First();
+        var withSkipped = scenarios[0];
+        var withFailed = scenarios[1];
 
         _passedTest = withSkipped.Tests.First();
         _skippedTest = withSkipped.Tests.Skip(1).First();
