@@ -74,10 +74,6 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        # arch: [ "win-x64", "win-x86", "win-arm", "win-arm64", 
-        #         "alpine-x64", "linux-x64", "linux-arm", "linux-arm64",
-        #         "osx-x64", "osx.11.0-x64", "osx.11.0-arm64", "osx.12-x64", "osx.12-arm64", "osx.13-x64", "osx.13-arm64"
-        #       ]
         arch: [ "win-x64", "win-arm64" ]
 
     steps:
@@ -106,11 +102,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # arch: [ "win-x64", "win-x86", "win-arm", "win-arm64", 
-        #         "alpine-x64", "linux-x64", "linux-arm", "linux-arm64",
-        #         "osx-x64", "osx.11.0-x64", "osx.11.0-arm64", "osx.12-x64", "osx.12-arm64", "osx.13-x64", "osx.13-arm64"
-        #       ]
-        arch: [ "linux-x64" ]
+        #arch: [ "linux-x64", "linux-arm64", "linux-musl-x64", "linux-musl-arm64" ]
+        arch: [ "linux-x64", "linux-musl-x64" ]
 
     steps:
     - uses: actions/checkout@v4
@@ -138,11 +131,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        # arch: [ "win-x64", "win-x86", "win-arm", "win-arm64", 
-        #         "alpine-x64", "linux-x64", "linux-arm", "linux-arm64",
-        #         "osx-x64", "osx.11.0-x64", "osx.11.0-arm64", "osx.12-x64", "osx.12-arm64", "osx.13-x64", "osx.13-arm64"
-        #       ]
-        arch: [ "osx-x64", "osx.11.0-x64", "osx.11.0-arm64", "osx.12-x64", "osx.12-arm64", "osx.13-x64", "osx.13-arm64" ]
+        arch: [ "osx-x64", "osx-arm64" ]
 
     steps:
     - uses: actions/checkout@v4
