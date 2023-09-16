@@ -102,7 +102,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [ "linux-x64", "linux-arm64", "linux-musl-x64" ]
+        #arch: [ "linux-x64", "linux-arm64", "linux-musl-x64", "linux-musl-arm64" ]
+        arch: [ "linux-x64", "linux-musl-x64" ]
 
     steps:
     - uses: actions/checkout@v4
