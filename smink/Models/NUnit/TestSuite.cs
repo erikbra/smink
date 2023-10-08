@@ -15,8 +15,8 @@ public record TestSuite
     public string? Result { get; set; }
     public DateTime? StartTime { get; set; }
     public DateTime? EndTime { get; set; }
-    
-    public IEnumerable<TestSuite> TestSuites { get; set; }
-    public IEnumerable<TestCase> TestCases { get; set; }
+
+    public IEnumerable<TestSuite> TestSuites { get; set; } = Enumerable.Empty<TestSuite>();
+    public IEnumerable<TestCase> TestCases { get; set; } = Enumerable.Empty<TestCase>();
     
 }

@@ -7,7 +7,7 @@ public class TestSuite
     public string? Id { get; set;  }
     public string? Name { get; set; }
     public string? DisplayName { get; set; }
-    public string SanitizedName => Common.Sanitize(Name ?? Id.ToString());
+    public string SanitizedName => Common.Sanitize(Name ?? Id!.ToString());
     
     public string? ConfigFile { get; set; }
     public string? Environment { get; set; }
