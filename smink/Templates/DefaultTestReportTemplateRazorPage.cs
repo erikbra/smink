@@ -20,6 +20,16 @@ public class DefaultTestReportTemplateRazorPage: ComponentBase
         return $"{prefix};{suffix}";
     }
     
+    protected static string GetClass(TestRun test)
+    {
+        return test switch {
+            { Result: "Skip"  } => "testSkip",
+            { Result: "Pass"} => "testPass",
+            _ => ""
+        };
+    }
+    
+    
     protected static string? Shorten(string? message) => message switch{
         { Length: > 2000} => message[..1999] + "...",
         _ => message 

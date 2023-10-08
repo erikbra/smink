@@ -14,6 +14,6 @@ public record TestRun
     public DateTime? StartTime { get; set; }
     public DateTime? EndTime { get; set; }
     
-    public IEnumerable<TestSuite> TestSuites { get; set; }
+    public IEnumerable<TestSuite> TestSuites { get; set; } = Enumerable.Empty<TestSuite>();
     
 }

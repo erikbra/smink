@@ -1,6 +1,6 @@
 namespace NUnit.ExampleTests.Set1.With_collection;
 
-[TestFixture("Common fixture")]
+[TestFixture()]
 public class UnitTest_With_Collection
 {
     [Test]

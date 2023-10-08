@@ -1,6 +1,7 @@
 namespace NUnit.ExampleTests.Set1.With_collection;
 
-[TestFixture("Common fixture")]
+[TestFixture()]
+// ReSharper disable once InconsistentNaming
 public class Another_UnitTest_With_Same_Fixture
 {
     [Test]

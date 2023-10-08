@@ -18,8 +18,8 @@ public record TestCase
     public string? Result { get; set; }
     public DateTime? StartTime { get; set; }
     public DateTime? EndTime { get; set; }
-    
-    public IEnumerable<Failure> Failures { get; set; }
+
+    public IEnumerable<Failure> Failures { get; set; } = Enumerable.Empty<Failure>();
     public string? Output { get; set; }
     
 }
