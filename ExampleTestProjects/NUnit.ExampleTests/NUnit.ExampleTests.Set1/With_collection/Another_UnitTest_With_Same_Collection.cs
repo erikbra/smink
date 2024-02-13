@@ -7,12 +7,12 @@ public class Another_UnitTest_With_Same_Fixture
     [Test]
     public void Failing_test()
     {
-        Assert.True(false);
+        Assert.Fail();
     }
     
     [Test]
     public void Successful_test()
     {
-        Assert.True(true);
+        Assert.Fail();
     }
 }

@@ -5,12 +5,12 @@ public class UnitTest_Without_Collection
     [Test]
     public void Failing_Test()
     {
-        Assert.True(false);
+        Assert.Fail();
     }
     
     [Ignore("Just to test ignoring")]
     public void Ignored_Test()
     {
-        Assert.True(false);
+        Assert.Fail();
     }
 }
