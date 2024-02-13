@@ -9,6 +9,6 @@ public class When_the_customer_is_too_old
     public void We_refer_the_customer_to_an_affiliate_shop(){}
     
     [Test]
-    public void We_make_them_happy(){ Assert.True(false); }
+    public void We_make_them_happy(){ Assert.Fail("We cannot make them happy when they are too old"); }
     
 }

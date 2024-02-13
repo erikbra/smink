@@ -6,12 +6,12 @@ public class UnitTest_With_Collection
     [Test]
     public void Failing_test()
     {
-        Assert.True(false);
+        Assert.Fail("Just to test failing test with collection");
     }
     
     [Test]
     public void Successful_test()
     {
-        Assert.True(true);
+        Assert.Pass();
     }
 }
