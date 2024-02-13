@@ -60,9 +60,7 @@ public class TestRun_
     
     [Fact]
     public void Failed_test_has_correct_Failure_Message() => _failedTest.Failure!.Message.Should().Be(
-@"  Expected: True
-  But was:  False
-");
+@"We cannot make them happy when they are too old");
     
     [Fact]
     public void Failed_test_has_correct_Failure_StackTrace() => _failedTest.Failure!.StackTrace.Should().Be(
