@@ -274,7 +274,7 @@
         <details class="suite">
             <summary>
                 <h2 class="summaryHeading">
-                    @suite.DisplayName
+                    @(!string.IsNullOrWhiteSpace(suite.Environment) ? $"{suite.Environment}: " : "")@suite.DisplayName
                 </h2>
                 <!-- Time Label -->
                 <div class="ui blue label" data-tooltip="Test suite runtime" style="float:right;">

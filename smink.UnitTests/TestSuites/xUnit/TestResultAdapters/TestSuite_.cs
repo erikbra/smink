@@ -49,6 +49,9 @@ public class TestSuite_
     public void Has_correct_Name() => _testSuite!.Name.Should().Be("Adding_a_new_customer");
 
     [Fact]
+    public void Has_correct_Environment() => _testSuite!.Environment.Should().Be("Environment name specified on the command line");
+
+    [Fact]
     public void Has_correct_DisplayName() => _testSuite!.DisplayName.Should().Be("Adding a new customer");
     
     [Fact]

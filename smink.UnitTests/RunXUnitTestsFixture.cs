@@ -18,6 +18,8 @@ public class RunXUnitTestsFixture: IAsyncLifetime
     public Assemblies? Assemblies { get; set; }
     public TestReport? TestReport { get; set; }
 
+    public string Environment { get; } = "Environment name specified on the command line";
+
     private readonly string _testResultsFilePattern;
     private readonly XUnitResultsReader _xunit;
     private readonly XUnitResultsAdapter _xUnitResultsAdapter;
@@ -71,7 +73,7 @@ public class RunXUnitTestsFixture: IAsyncLifetime
                 "test",
                 "-verbosity:q",
                 "-maxcpucount:1",
-                $"--logger:xunit;LogFilePath={_testResultsFilePattern}"
+                $"--logger:xunit;LogFilePath={_testResultsFilePattern};Environment={Environment}"
             }
         };
 

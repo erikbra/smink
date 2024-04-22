@@ -112,7 +112,7 @@ public class XUnitResultsAdapter
 
         DateTime runDateAndTime = runDate.ToDateTime(runTime);
         
-        return new  TestSuite
+        return new TestSuite
         {
             Id = (arg.Id ?? Guid.NewGuid()).ToString(),
             Name = testSuiteName,
