@@ -19,7 +19,7 @@
    </PropertyGroup>
 
    <ItemGroup>
-     <PackageReference Include="Microsoft.AspNetCore.Components" Version="8.0.5" />
+     <PackageReference Include="Microsoft.AspNetCore.Components" Version="8.0.6" />
      <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.5" />
      <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
 
