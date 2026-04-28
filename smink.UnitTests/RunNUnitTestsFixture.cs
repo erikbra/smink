@@ -16,7 +16,7 @@ public class RunNUnitTestsFixture: IAsyncLifetime
     public string ExampleTestProjectFolder { get; }
     public string TestResultsFolder { get; }
     public IEnumerable<string> TestResultsFiles => Directory.GetFiles(TestResultsFolder, "*.nunit_test_result.xml");
-    public IEnumerable<TestRun> TestRuns { get; set; }
+    public IEnumerable<TestRun> TestRuns { get; set; } = [];
     public TestReport? TestReport { get; set; }
 
     private readonly string _testResultsFilePattern;
@@ -92,7 +92,7 @@ public class RunNUnitTestsFixture: IAsyncLifetime
         bool found;
         do
         {
-            currentFolder = currentFolder.Parent;
+            currentFolder = currentFolder.Parent ?? throw new ApplicationException($"Reached filesystem root without finding {folderToFind}");
             var directories = currentFolder.GetDirectories(folderToFind);
             found = directories.Length != 0;
         } while (!found && currentFolder != currentFolder.Root);
