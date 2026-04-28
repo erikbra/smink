@@ -1,7 +1,4 @@
-﻿using System.CommandLine;
-using System.CommandLine.Builder;
-using System.CommandLine.Parsing;
-using System.Globalization;
+﻿using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,6 +7,12 @@ using smink;
 using smink.Infrastructure;
 using smink.Templates;
 
+if (args.Length < 2)
+{
+    Console.WriteLine("Usage: smink <input-file> <output-file> [--title <title>]");
+    return 1;
+}
+
 IServiceCollection services = new ServiceCollection();
 services.AddLogging();
 services.AddSingleton<ReportGenerator>();
@@ -17,34 +20,42 @@ services.AddSingleton<ReportGenerator>();
 CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 
 IServiceProvider serviceProvider = services.BuildServiceProvider();
-//ILoggerFactory loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
 
-var rootCommand = new RootCommand();
+var inputFile = args[0];
+var outputFile = args[1];
+var title = "Test Result";
 
-var input = CommandLineArguments.InputFiles();
-var output = CommandLineArguments.OutputFile();
-var titleArgument = CommandLineArguments.Title();
+// Parse optional --title argument
+for (int i = 2; i < args.Length - 1; )
+{
+    if ((args[i] == "--title" || args[i] == "-t") && i + 1 < args.Length)
+    {
+        title = args[i + 1];
+        i += 2;
+    }
+    else
+    {
+        i++;
+    }
+}
 
-rootCommand.Add(input);
-rootCommand.Add(output);
-rootCommand.Add(titleArgument);
-
-rootCommand.SetHandler(async (inputFiles, outputFiles, title) =>
+try
 {
     var config = new ReportConfig()
     {
-        InputFiles = new[] { inputFiles },
-        OutputFile = outputFiles,
+        InputFiles = new[] { inputFile },
+        OutputFile = outputFile,
         Title = title
     };
 
     var rg = serviceProvider.GetRequiredService<ReportGenerator>();
     var html = await rg.GenerateReport(config);
-    await File.WriteAllTextAsync(outputFiles, html);
-
-}, input, output, titleArgument);
-
-await rootCommand.InvokeAsync(args);
-
-// var inputFiles = args[..^1];
-// var outputFile = args[^1];
+    await File.WriteAllTextAsync(outputFile, html);
+    Console.WriteLine($"Report generated: {outputFile}");
+    return 0;
+}
+catch (Exception ex)
+{
+    await Console.Error.WriteLineAsync($"Error: {ex.Message}");
+    return 1;
+}
