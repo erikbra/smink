@@ -55,7 +55,9 @@ public class DefaultTestReportTemplateRazorPage: ComponentBase
     }
 
     protected static string FormatTimestamp(DateTime? timestamp) =>
-        timestamp?.ToString("yyyy-MM-dd HH:mm:ss 'UTC'", CultureInfo.InvariantCulture) ?? "Unknown";
+        timestamp.HasValue
+            ? timestamp.Value.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss 'UTC'", CultureInfo.InvariantCulture)
+            : "Unknown";
 
     protected static string GetResultLabel(TestRun test) => test.Result switch
     {
