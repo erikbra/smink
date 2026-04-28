@@ -7,11 +7,37 @@ using smink;
 using smink.Infrastructure;
 using smink.Templates;
 
-if (args.Length < 2)
+// Parse optional named arguments and collect positional args
+var positionalArgs = new List<string>();
+var title = "Test Result";
+
+for (int i = 0; i < args.Length; i++)
 {
-    Console.WriteLine("Usage: smink <input-file> <output-file> [--title <title>]");
+    if (args[i] == "--title" || args[i] == "-t")
+    {
+        if (i + 1 >= args.Length)
+        {
+            Console.Error.WriteLine($"Error: '{args[i]}' requires a value.");
+            Console.Error.WriteLine("Usage: smink <input-file> [<input-file> ...] <output-file> [--title <title>]");
+            return 1;
+        }
+        title = args[i + 1];
+        i++;
+    }
+    else
+    {
+        positionalArgs.Add(args[i]);
+    }
+}
+
+if (positionalArgs.Count < 2)
+{
+    Console.Error.WriteLine("Usage: smink <input-file> [<input-file> ...] <output-file> [--title <title>]");
     return 1;
 }
+
+var inputFiles = positionalArgs.Take(positionalArgs.Count - 1).ToArray();
+var outputFile = positionalArgs[^1];
 
 IServiceCollection services = new ServiceCollection();
 services.AddLogging();
@@ -21,29 +47,11 @@ CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 
 IServiceProvider serviceProvider = services.BuildServiceProvider();
 
-var inputFile = args[0];
-var outputFile = args[1];
-var title = "Test Result";
-
-// Parse optional --title argument
-for (int i = 2; i < args.Length - 1; )
-{
-    if ((args[i] == "--title" || args[i] == "-t") && i + 1 < args.Length)
-    {
-        title = args[i + 1];
-        i += 2;
-    }
-    else
-    {
-        i++;
-    }
-}
-
 try
 {
     var config = new ReportConfig()
     {
-        InputFiles = new[] { inputFile },
+        InputFiles = inputFiles,
         OutputFile = outputFile,
         Title = title
     };
