@@ -3,21 +3,38 @@ using smink;
 
 namespace smink.UnitTests.TestSuites.xUnit.ProjectGeneration;
 
+[CollectionDefinition("RunMixedFormatsFixture")]
+public class RunMixedFormatsFixtureCollection :
+    ICollectionFixture<RunNUnitTestsFixture>,
+    ICollectionFixture<RunXUnitTestsFixture>
+{ }
+
+[Collection("RunMixedFormatsFixture")]
 public class ComprehensiveReport_
 {
+    private readonly RunNUnitTestsFixture _nunitFixture;
+    private readonly RunXUnitTestsFixture _xunitFixture;
+
+    public ComprehensiveReport_(RunNUnitTestsFixture nunitFixture, RunXUnitTestsFixture xunitFixture)
+    {
+        _nunitFixture = nunitFixture;
+        _xunitFixture = xunitFixture;
+    }
+
     [Fact]
     public async Task Mixed_input_formats_are_merged_in_one_report()
     {
-        var repoRoot = FindRepoRoot();
-        var report = await new TestReportGenerator(null).GenerateReport(new[]
-        {
-            Path.Combine(repoRoot, "ExampleTestProjects", "NUnit.ExampleTests", "TestResults", "NUnit.ExampleTests.Set1.nunit_test_result.xml"),
-            Path.Combine(repoRoot, "ExampleTestProjects", "xUnit.ExampleTests", "TestResults", "xUnit.ExampleTests.Set1.xunit_test_result.xml")
-        });
+      var inputFiles = _nunitFixture.TestResultsFiles
+        .Concat(_xunitFixture.TestResultsFiles)
+        .ToArray();
+
+      var report = await new TestReportGenerator(null).GenerateReport(inputFiles);
 
         report.Should().NotBeNull();
-        report!.TestSuites.Should().Contain(suite => suite.RootNamespace == "NUnit.ExampleTests.Set1");
-        report.TestSuites.Should().Contain(suite => suite.RootNamespace == "xUnit.ExampleTests.Set1");
+      report!.TestSuites.Should().Contain(suite =>
+        (suite.RootNamespace ?? string.Empty).StartsWith("NUnit.ExampleTests.", StringComparison.Ordinal));
+      report.TestSuites.Should().Contain(suite =>
+        (suite.RootNamespace ?? string.Empty).StartsWith("xUnit.ExampleTests.", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -123,20 +140,4 @@ public class ComprehensiveReport_
         }
     }
 
-    private static string FindRepoRoot()
-    {
-        var current = new DirectoryInfo(Directory.GetCurrentDirectory());
-
-        while (current is not null)
-        {
-            if (File.Exists(Path.Combine(current.FullName, "smink.sln")))
-            {
-                return current.FullName;
-            }
-
-            current = current.Parent;
-        }
-
-        throw new DirectoryNotFoundException("Could not locate repository root containing smink.sln");
-    }
 }
