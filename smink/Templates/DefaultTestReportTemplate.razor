@@ -1,541 +1,1185 @@
 @inherits DefaultTestReportTemplateRazorPage
 
+@{
+    var suites = TestReport.TestSuites.ToList();
+    var scenarios = suites.SelectMany(suite => suite.TestScenarios).ToList();
+    var tests = scenarios.SelectMany(scenario => scenario.Tests).ToList();
+    var failedTests = tests
+        .Where(test => test.Result == "Fail")
+        .OrderByDescending(test => test.Failure is not null)
+        .ThenByDescending(test => test.Time)
+        .Take(8)
+        .ToList();
+    var skippedTests = tests.Count(test => test.Result == "Skip");
+    var avgRuntime = tests.Count > 0 ? tests.Average(test => test.Time) : 0;
+}
+
 <html lang="en">
 <head>
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet"/>
-    <style>
-            .errorMessage {
-                font-size: 16px;
-                font-family: Lato, sans-serif;
-                font-weight: 300;
-                color: black;
-                display: inline;
-                border-radius: 5px;
-                padding: 1px;
-            }
-            .errorColor {
-                background-color: #f7e1d4;
-            }
-            .failureColor {
-                background-color: #f7d4d4;
-            }
-            
-            body {
-                font-size: 16px; font-family: Open sans, serif;
-            }
-            
-            .suite, .scenario {
-                padding: 0.75em;
-            }
-            
-            .summaryHeading {
-                display: inline;
-                margin-left: 0.75em;
-                font-family: Lato, serif; 
-                font-size: 15px; 
-                color: #2f2f2f; 
-                font-weight: bold;
-            }
-            
-            .suiteContainer, .scenarioContainer, .testContainer {
-                padding: 0.75em;
-                border: 1px solid rgba(34, 36, 38, 0.15);
-            }
-            
-            .suiteContainer:first-of-type, 
-            .scenarioContainer:first-of-type, 
-            .testContainer:first-of-type
-            {
-                border-radius: 7px 7px 0 0;
-            }
-            
-            .suiteContainer:last-of-type, 
-            .scenarioContainer:last-of-type, 
-            .testContainer:last-of-type {
-                border-radius: 0 0 7px 7px;
-            }
-            
-            .suiteContainer:first-of-type:last-of-type, 
-            .scenarioContainer:first-of-type:last-of-type, 
-            .testContainer:first-of-type:last-of-type {
-                border-radius: 7px 7px 7px 7px;
-            }
-            
-            .scenarioContainer {
-                background-color:#00000017;
-            }
-            
-            .content {
-                padding-top: 1em;
-            }
-            
-            .container {
-                padding-bottom: 2em;
-            }
-            
-            .test-error-details {
-                overflow: auto;
-                padding: 1em !important; 
-                margin: 0;
-                max-width: 90%;
-                max-height: 400px; 
-                border: 1px solid #80808054;
-                background-color: white;
-            }
-            
-            summary.testPass::marker {
-              content: "\f058";
-              font-family: "outline-icons";
-              color: rgb(95, 95, 95);
-            }
-            
-            summary.testSkip::marker {
-              content: "\f059";
-              font-family: "outline-icons";
-              color: rgb(95, 95, 95);
-            }
-            
-            .tab-wrap {
-              transition: 0.3s box-shadow ease;
-              border-radius: 7px;
-              max-width: 100%;
-              display: flex;
-              flex-wrap: wrap;
-              position: relative;
-              list-style: none;
-              background-color: #fff;
-              margin: 40px 0;
-              box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-              &:hover {
-                box-shadow: 0 12px 23px rgba(0, 0, 0, 0.23), 0 10px 10px rgba(0, 0, 0, 0.19);
-              }
-            }
-            
-            .tab {
-              display: none;
-              &:first-of-type:not(:last-of-type) + label {
-                border-top-right-radius: 0;
-                border-bottom-right-radius: 0;
-              }
-              &:not(:first-of-type):not(:last-of-type) + label {
-                border-radius: 0;
-              }
-              &:last-of-type:not(:first-of-type) + label {
-                border-top-left-radius: 0;
-                border-bottom-left-radius: 0;
-              }
-              &:checked + label {
-                background-color: #fff;
-                box-shadow: 0 -1px 0 #fff inset;
-                cursor: default;
-                &:hover {
-                  box-shadow: 0 -1px 0 #fff inset;
-                  background-color: #fff;
-                }
-              }
-              + label {
-                box-shadow: 0 -1px 0 #eee inset;
-                border-radius: 7px 7px 0 0;
-                cursor: pointer;
-                display: block;
-                text-decoration: none;
-                color: #333;
-                flex-grow: 3;
-                text-align: center;
-                background-color: #f2f2f2;
-                user-select: none;
-                text-align: center;
-                transition: 0.3s background-color ease, 0.3s box-shadow ease;
-                height: 50px;
-                box-sizing: border-box;
-                padding: 15px;
-                &:hover {
-                  background-color: #f9f9f9;
-                  box-shadow: 0 1px 0 #f4f4f4 inset;
-                }
-              }
-            }
-            
-            .tab__content {
-                padding: 10px 25px;
-                background-color: transparent;
-                position: absolute;
-                width: 100%;
-                z-index: -1;
-                opacity: 0;
-                left: 0;
-                transform: translateY(-3px);
-                border-radius: 7px;
-            }
-            
-            @for (var n = 1; n <= 4; n++)
-            {
-            <text>
-            .tab:checked:nth-of-type(@n) ~ .tab__content:nth-of-type(@n) {
-                opacity: 1;
-                transition: 0.5s opacity ease-in, 0.8s transform ease;
-                position: relative;
-                top: 0;
-                z-index: 100;
-                transform: translateY(0px);
-                text-shadow: 0 0 0;
-            }
-            </text>
-            };
-                	
-    </style>
+    <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <link href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.0/dist/semantic.min.css" rel="stylesheet"/>
+    <title>@TestReport.Title</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: #f3f6f4;
+            --bg-strong: #dfe8e3;
+            --panel: rgba(255, 255, 255, 0.94);
+            --panel-strong: #ffffff;
+            --line: #d8e1da;
+            --line-strong: #b9c7bc;
+            --text: #18231c;
+            --muted: #5a6a5f;
+            --accent: #165d46;
+            --accent-soft: rgba(22, 93, 70, 0.12);
+            --pass: #18794e;
+            --pass-soft: rgba(24, 121, 78, 0.12);
+            --fail: #c2410c;
+            --fail-soft: rgba(194, 65, 12, 0.12);
+            --error: #b42318;
+            --error-soft: rgba(180, 35, 24, 0.12);
+            --skip: #6b7280;
+            --skip-soft: rgba(107, 114, 128, 0.14);
+            --unknown: #355070;
+            --unknown-soft: rgba(53, 80, 112, 0.12);
+            --shadow: 0 18px 40px rgba(30, 48, 39, 0.08);
+            --radius-xl: 28px;
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --radius-sm: 10px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+            font-size: 15px;
+            line-height: 1.5;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top left, rgba(22, 93, 70, 0.12), transparent 28%),
+                radial-gradient(circle at top right, rgba(194, 65, 12, 0.09), transparent 22%),
+                linear-gradient(180deg, #f8fbf9 0%, var(--bg) 100%);
+        }
+
+        a {
+            color: inherit;
+        }
+
+        .page {
+            width: min(1480px, calc(100vw - 32px));
+            margin: 24px auto 48px;
+        }
+
+        .hero {
+            position: relative;
+            overflow: hidden;
+            padding: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: var(--radius-xl);
+            background:
+                linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(247, 250, 248, 0.92)),
+                linear-gradient(135deg, rgba(22, 93, 70, 0.08), rgba(194, 65, 12, 0.04));
+            box-shadow: var(--shadow);
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            inset: auto -80px -80px auto;
+            width: 240px;
+            height: 240px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(22, 93, 70, 0.14), transparent 72%);
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.72);
+            color: var(--muted);
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .hero-grid {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: minmax(0, 1.7fr) minmax(300px, 1fr);
+            gap: 24px;
+            align-items: start;
+        }
+
+        h1 {
+            margin: 16px 0 10px;
+            font-size: clamp(2rem, 4vw, 3.4rem);
+            line-height: 1.02;
+            letter-spacing: -0.04em;
+        }
+
+        .hero-copy p {
+            margin: 0;
+            max-width: 62ch;
+            color: var(--muted);
+            font-size: 1rem;
+        }
+
+        .hero-meta,
+        .suite-meta,
+        .scenario-meta,
+        .test-meta,
+        .detail-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .meta-pill,
+        .tone,
+        .stat-card,
+        .mini-stat,
+        .issue-card,
+        .artifact,
+        .suite-card,
+        .suite-summary,
+        .scenario-summary,
+        .test-summary,
+        .test-content,
+        .summary-section,
+        .nav-card {
+            border: 1px solid var(--line);
+            background: var(--panel);
+            box-shadow: 0 8px 26px rgba(31, 46, 37, 0.05);
+        }
+
+        .hero-meta {
+            margin-top: 18px;
+        }
+
+        .meta-pill {
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            color: var(--muted);
+        }
+
+        .meta-pill strong {
+            display: block;
+            color: var(--text);
+            font-size: 0.98rem;
+        }
+
+        .headline-panel {
+            padding: 22px;
+            border-radius: var(--radius-lg);
+            background: linear-gradient(180deg, rgba(22, 93, 70, 0.08), rgba(255, 255, 255, 0.9));
+            border: 1px solid rgba(22, 93, 70, 0.16);
+        }
+
+        .headline-panel h2 {
+            margin: 0;
+            font-size: 0.98rem;
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        .headline-rate {
+            margin-top: 8px;
+            font-size: clamp(2.4rem, 5vw, 4.5rem);
+            line-height: 0.92;
+            letter-spacing: -0.05em;
+        }
+
+        .headline-subtext {
+            margin-top: 8px;
+            color: var(--muted);
+        }
+
+        .bar-track {
+            overflow: hidden;
+            height: 12px;
+            margin-top: 16px;
+            border-radius: 999px;
+            background: rgba(24, 35, 28, 0.1);
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #1f8a63, #36b37e);
+        }
+
+        .top-grid,
+        .summary-grid,
+        .suite-grid,
+        .suite-highlights {
+            display: grid;
+            gap: 16px;
+        }
+
+        .top-grid {
+            grid-template-columns: 1.2fr 0.8fr;
+            margin-top: 24px;
+        }
+
+        .summary-section,
+        .nav-card {
+            padding: 22px;
+            border-radius: var(--radius-lg);
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .section-title h2,
+        .section-title h3 {
+            margin: 0;
+            font-size: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .section-title span {
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        .summary-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        .stat-card,
+        .mini-stat,
+        .issue-card,
+        .artifact,
+        .suite-card,
+        .suite-summary,
+        .scenario-summary,
+        .test-summary,
+        .test-content {
+            border-radius: var(--radius-md);
+        }
+
+        .stat-card {
+            padding: 18px;
+        }
+
+        .stat-card strong,
+        .mini-stat strong {
+            display: block;
+            margin-top: 4px;
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            line-height: 1;
+            letter-spacing: -0.04em;
+        }
+
+        .stat-card span,
+        .mini-stat span,
+        .issue-card p,
+        .artifact-title,
+        .secondary-text,
+        .nav-card p {
+            color: var(--muted);
+        }
+
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .nav-links a {
+            padding: 9px 12px;
+            border-radius: 999px;
+            background: var(--accent-soft);
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .nav-links a:hover {
+            background: rgba(22, 93, 70, 0.18);
+        }
+
+        .suite-grid {
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        }
+
+        .suite-card {
+            padding: 18px;
+        }
+
+        .suite-card h3,
+        .issue-card h3,
+        .suite-summary h3,
+        .scenario-summary h4,
+        .test-summary h5 {
+            margin: 0;
+            letter-spacing: -0.02em;
+        }
+
+        .suite-card h3,
+        .issue-card h3 {
+            font-size: 1rem;
+        }
+
+        .suite-card p,
+        .issue-card p,
+        .suite-summary p,
+        .scenario-summary p,
+        .test-summary p,
+        .artifact p {
+            margin: 8px 0 0;
+        }
+
+        .suite-highlights {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            margin-top: 16px;
+        }
+
+        .mini-stat,
+        .issue-card,
+        .artifact {
+            padding: 16px;
+        }
+
+        .tone {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .tone::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .tone.pass {
+            color: var(--pass);
+            background: var(--pass-soft);
+            border-color: rgba(24, 121, 78, 0.18);
+        }
+
+        .tone.fail {
+            color: var(--fail);
+            background: var(--fail-soft);
+            border-color: rgba(194, 65, 12, 0.18);
+        }
+
+        .tone.error {
+            color: var(--error);
+            background: var(--error-soft);
+            border-color: rgba(180, 35, 24, 0.18);
+        }
+
+        .tone.skip {
+            color: var(--skip);
+            background: var(--skip-soft);
+            border-color: rgba(107, 114, 128, 0.18);
+        }
+
+        .tone.unknown {
+            color: var(--unknown);
+            background: var(--unknown-soft);
+            border-color: rgba(53, 80, 112, 0.18);
+        }
+
+        .scenario-meta .tone,
+        .test-meta .tone {
+            padding: 5px 8px;
+            font-size: 11px;
+            letter-spacing: 0.03em;
+            opacity: 0.85;
+        }
+
+        .book-grid,
+        .issues-grid,
+        .artifact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+        }
+
+        .book-suite {
+            padding: 18px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--line);
+            background: var(--panel);
+            box-shadow: 0 8px 26px rgba(31, 46, 37, 0.05);
+        }
+
+        .book-suite > h3 {
+            margin: 0;
+            font-size: 1.08rem;
+            letter-spacing: -0.02em;
+        }
+
+        .book-scenarios {
+            margin-top: 12px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .book-scenario {
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--line);
+            background: rgba(247, 249, 247, 0.92);
+        }
+
+        .book-scenario-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 10px;
+            margin: 0;
+        }
+
+        .book-scenario-header h4 {
+            margin: 0;
+            font-size: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .book-scenario-meta {
+            color: var(--muted);
+            font-size: 0.88rem;
+            white-space: nowrap;
+        }
+
+        .book-tests {
+            margin: 8px 0 0 0;
+            padding: 0 0 0 20px;
+            display: grid;
+            gap: 4px;
+        }
+
+        .book-tests li {
+            margin: 0;
+        }
+
+        .book-tests a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .book-tests a:hover {
+            color: var(--accent);
+            text-decoration: underline;
+        }
+
+        .book-test-meta {
+            margin-left: 8px;
+            color: var(--muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .book-test-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            vertical-align: middle;
+            margin-left: 7px;
+        }
+
+        .book-test-indicator.fail   { background: var(--fail); }
+        .book-test-indicator.error  { background: var(--error); }
+        .book-test-indicator.skip   { background: var(--skip); }
+        .book-test-indicator.pass   { display: none; }
+        .book-test-indicator.unknown { background: var(--unknown); }
+
+        .report-sections {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            margin-top: 20px;
+        }
+
+        details {
+            border-radius: inherit;
+        }
+
+        summary {
+            list-style: none;
+            cursor: pointer;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .suite-shell {
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--line-strong);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 248, 0.96));
+            box-shadow: var(--shadow);
+        }
+
+        .suite-summary,
+        .scenario-summary,
+        .test-summary {
+            position: relative;
+            padding: 20px 22px;
+        }
+
+        .suite-summary {
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        .scenario-shell,
+        .test-shell {
+            margin-top: 14px;
+            border-radius: var(--radius-md);
+        }
+
+        .scenario-shell {
+            border: 1px solid var(--line);
+            background: rgba(246, 248, 246, 0.96);
+        }
+
+        .test-shell {
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .suite-content,
+        .scenario-content,
+        .test-content {
+            padding: 0 22px 22px;
+        }
+
+        .scenario-content,
+        .test-content {
+            padding-top: 0;
+        }
+
+        .summary-row {
+            display: flex;
+            align-items: start;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .summary-copy {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .summary-copy h3,
+        .summary-copy h4,
+        .summary-copy h5 {
+            overflow-wrap: anywhere;
+            margin: 0;
+            line-height: 1.24;
+        }
+
+        .summary-copy h4 {
+            font-size: 1.08rem;
+        }
+
+        .summary-copy h5 {
+            font-size: 1.02rem;
+            font-weight: 700;
+        }
+
+        .summary-copy p {
+            color: var(--muted);
+        }
+
+        .summary-metrics {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: end;
+            gap: 8px;
+        }
+
+        .metric-chip {
+            padding: 7px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.82);
+            white-space: nowrap;
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        .metric-chip strong {
+            color: var(--text);
+        }
+
+        .result-breakdown {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .metric-block {
+            padding: 12px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.75);
+            border: 1px solid var(--line);
+        }
+
+        .metric-block strong {
+            display: block;
+            font-size: 1.25rem;
+            letter-spacing: -0.03em;
+        }
+
+        .metric-block span {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .metric-block.pass strong { color: var(--pass); }
+        .metric-block.fail strong { color: var(--fail); }
+        .metric-block.error strong { color: var(--error); }
+        .metric-block.skip strong { color: var(--skip); }
+        .metric-block.unknown strong { color: var(--unknown); }
+
+        .failure-banner {
+            margin-top: 12px;
+            padding: 14px 16px;
+            border-left: 4px solid var(--fail);
+            border-radius: 12px;
+            background: rgba(194, 65, 12, 0.08);
+        }
+
+        .failure-banner.error {
+            border-left-color: var(--error);
+            background: rgba(180, 35, 24, 0.08);
+        }
+
+        .failure-banner.skip {
+            border-left-color: var(--skip);
+            background: rgba(107, 114, 128, 0.08);
+        }
+
+        .failure-banner strong {
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .artifact-grid {
+            margin-top: 16px;
+        }
+
+        .artifact-title {
+            margin-bottom: 10px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        pre {
+            overflow: auto;
+            margin: 0;
+            padding: 14px;
+            border-radius: 10px;
+            background: #0f1d17;
+            color: #e6f5ef;
+            font: 13px/1.45 "SFMono-Regular", Menlo, Consolas, monospace;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        code {
+            font-family: inherit;
+        }
+
+        .source-link {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .empty-state {
+            padding: 18px;
+            border-radius: var(--radius-md);
+            border: 1px dashed var(--line-strong);
+            color: var(--muted);
+            background: rgba(255, 255, 255, 0.72);
+        }
+
+        @@media (max-width: 1120px) {
+            .hero-grid,
+            .top-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-grid,
+            .suite-highlights,
+            .result-breakdown {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @@media (max-width: 720px) {
+            .page {
+                width: min(100vw - 16px, 100%);
+                margin: 8px auto 32px;
+            }
+
+            .hero,
+            .summary-section,
+            .nav-card,
+            .suite-summary,
+            .scenario-summary,
+            .test-summary,
+            .suite-content,
+            .scenario-content,
+            .test-content {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+
+            .summary-grid,
+            .suite-highlights,
+            .result-breakdown,
+            .book-grid,
+            .issues-grid,
+            .artifact-grid,
+            .suite-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-row,
+            .section-title {
+                flex-direction: column;
+            }
+
+            .summary-metrics {
+                justify-content: start;
+            }
+        }
+    </style>
 </head>
-<body style="color:rgba(47, 53, 69, 0.9);">
-<div class="ui container" style="margin:40px;">
-
-<h1 class="ui header">
-    <div class="content">
-        <span style="font-size:30px; font-weight:300; font-family:Open Sans;">
-            <span style="font-weight:600;">
-                @TestReport.Title
-            </span>
-            @TestReport.Timestamp?.ToString("U")
-        </span>
-        <div>
-            <div class="ui active indicating progress" data-percent="@(TestReport.SuccessRate)" style="margin-top:10px;">
-                <div class="bar" style="width:@(TestReport.SuccessRate)%">
-                    <div class="progress">@TestReport.TotalSuccessful/@TestReport.TotalTests passed</div>
+<body>
+<div class="page">
+    <section class="hero">
+        <div class="hero-grid">
+            <div class="hero-copy">
+                <h1>@TestReport.Title</h1>
+                <p>
+                    Your test suite as living documentation. Scenarios organized like chapters in a specification, with every test name visible and searchable.
+                    When you need to investigate, drill into failure details and diagnostics—all in one file.
+                </p>
+                <div class="hero-meta">
+                    <div class="meta-pill">
+                        Generated
+                        <strong>@FormatTimestamp(TestReport.Timestamp)</strong>
+                    </div>
+                    <div class="meta-pill">
+                        Suites
+                        <strong>@suites.Count</strong>
+                    </div>
+                    <div class="meta-pill">
+                        Scenarios
+                        <strong>@scenarios.Count</strong>
+                    </div>
+                    <div class="meta-pill">
+                        Avg test runtime
+                        <strong>@FormatSeconds(avgRuntime)</strong>
+                    </div>
+                    @if (TestReport.Computer is { Length: > 0 })
+                    {
+                        <div class="meta-pill">
+                            Machine
+                            <strong>@TestReport.Computer</strong>
+                        </div>
+                    }
+                    @if (TestReport.User is { Length: > 0 })
+                    {
+                        <div class="meta-pill">
+                            User
+                            <strong>@TestReport.User</strong>
+                        </div>
+                    }
                 </div>
             </div>
-        </div>
-        <div class="ui divider">
-        </div>
-        <div class="sub header" style="margin-top: 15px;">
-            <div class="ui mini statistics">
-                <div class="statistic" data-tooltip="Total tests ran">
-                    <div class="value">
-                        <i class="shipping fast icon gray" style="padding-right:4px;">
-                        </i>
-                        @TestReport.TotalTests
-                    </div>
-                    <div class="label">
-                        Tests
-                    </div>
+
+            <div class="headline-panel">
+                <h2>Overall pass rate</h2>
+                <div class="headline-rate">@FormatPercent(TestReport.SuccessRate)%</div>
+                <div class="headline-subtext">@TestReport.TotalSuccessful of @TestReport.TotalTests tests completed successfully</div>
+                <div class="bar-track" aria-hidden="true">
+                    <div class="bar-fill" style="width:@(FormatPercent(TestReport.SuccessRate))%"></div>
                 </div>
-                <div class="statistic" data-tooltip="Total successful test runs">
-                    <div class="value">
-                        <i class="check circle outline icon green" style="padding-right:4px;">
-                        </i>
-                        @TestReport.TotalSuccessful
+                <div class="suite-highlights">
+                    <div class="mini-stat">
+                        <span>Total tests</span>
+                        <strong>@TestReport.TotalTests</strong>
                     </div>
-                    <div class="label">
-                        Passed
+                    <div class="mini-stat">
+                        <span>Failures</span>
+                        <strong>@TestReport.TotalFailures</strong>
                     </div>
-                </div>
-                <div class="statistic" data-tooltip="Total test runs with failed assertions">
-                    <div class="value">
-                        <i class="exclamation circle icon red" style="padding-right:4px;">
-                        </i>
-                        @TestReport.TotalFailures
+                    <div class="mini-stat">
+                        <span>Errors</span>
+                        <strong>@TestReport.TotalErrors</strong>
                     </div>
-                    <div class="label">
-                        Failed
-                    </div>
-                </div>
-                <div class="statistic" data-tooltip="Total test runs with unanticipated errors">
-                    <div class="value">
-                        <i class="flag outline icon orange" style="padding-right:4px;">
-                        </i>
-                        @TestReport.TotalErrors
-                    </div>
-                    <div class="label">
-                        Errored
-                    </div>
-                </div>
-                <div class="statistic" data-tooltip="Total runtime for all tests">
-                    <div class="value">
-                        <i class="hourglass half icon blue" style="padding-right:4px;">
-                        </i>
-                        @($@"{TestReport.TotalTime:mm\:ss}")
-                        <span style="text-transform:lowercase; font-size:12px;">
-                            min
-                        </span>
-                    </div>
-                    <div class="label">
-                        Runtime
+                    <div class="mini-stat">
+                        <span>Total runtime</span>
+                        <strong>@FormatDuration(TestReport.TotalTime)</strong>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</h1>
+    </section>
 
-@foreach (var suite in TestReport.TestSuites)
-{
-    <a id="@suite.SanitizedName"></a>
-    <div class="suiteContainer">
-        <details class="suite">
-            <summary>
-                <h2 class="summaryHeading">
-                    @(!string.IsNullOrWhiteSpace(suite.Environment) ? $"{suite.Environment}: " : "")@suite.DisplayName
-                </h2>
-                <!-- Time Label -->
-                <div class="ui blue label" data-tooltip="Test suite runtime" style="float:right;">
-                    <i class="clock icon">
-                    </i>
-                    <b>@($"{suite.TotalTime:0.000}")</b>
-                    sec
-                </div>
-                <div class="ui label" style="border: 1px solid #80808045;">
-                    <b>
-                        Test Suite
-                    </b>
-                </div>
-                <!-- Test Suite Labels -->
-                @if (suite.Failed > 0)
+    <section class="top-grid">
+        <div class="summary-section">
+            <div class="section-title">
+                <h2>Execution dashboard</h2>
+                <span>Quick quality signals</span>
+            </div>
+            <div class="summary-grid">
+                <article class="stat-card">
+                    <span>Passed</span>
+                    <strong>@TestReport.TotalSuccessful</strong>
+                </article>
+                <article class="stat-card">
+                    <span>Failed</span>
+                    <strong>@TestReport.TotalFailures</strong>
+                </article>
+                <article class="stat-card">
+                    <span>Errored</span>
+                    <strong>@TestReport.TotalErrors</strong>
+                </article>
+                <article class="stat-card">
+                    <span>Skipped</span>
+                    <strong>@skippedTests</strong>
+                </article>
+            </div>
+            <div class="suite-grid" style="margin-top:16px;">
+                @foreach (var suite in suites.OrderByDescending(suite => suite.Errors).ThenByDescending(suite => suite.Failed).ThenBy(suite => suite.DisplayName))
                 {
-                    <div class="ui red label" data-tooltip="Total test runs with failed assertions" style="float:right;">
-                        <i class="exclamation circle icon">
-                        </i>
-                        <b>
-                            @suite.Failed
-                        </b>
-                        failed
-                    </div>
+                    var suiteTone = GetSuiteTone(suite);
+                    <article class="suite-card">
+                        <div class="section-title" style="margin-bottom:10px;">
+                            <span class="tone @suiteTone">@ShortStatusLabel(suiteTone)</span>
+                            <span>@FormatSeconds(suite.TotalTime)</span>
+                        </div>
+                        <h3>@(!string.IsNullOrWhiteSpace(suite.Environment) ? $"{suite.Environment}: " : "")@(suite.DisplayName ?? suite.Name)</h3>
+                        <p>@suite.Passed passed, @suite.Failed failed, @suite.Errors errored, @suite.Skipped skipped.</p>
+                        <div class="bar-track" aria-hidden="true">
+                            <div class="bar-fill" style="width:@(FormatPercent(suite.SuccessRate))%"></div>
+                        </div>
+                    </article>
                 }
-                @if (suite.Errors > 0)
+            </div>
+        </div>
+
+        <div class="nav-card">
+            <div class="section-title">
+                <h2>Jump by chapter</h2>
+                <span>Suites and scenarios</span>
+            </div>
+            <p>Use these anchors to move through the report like chapters in a test specification.</p>
+            <div class="nav-links">
+                @foreach (var suite in suites.OrderBy(suite => suite.DisplayName))
                 {
-                    <div class="ui orange label" data-tooltip="Total test runs with unanticipated errors" style="float:right;">
-                        <i class="flag outline icon">
-                        </i>
-                        <b>
-                            @suite.Errors
-                        </b>
-                        errored
-                    </div>
+                    <a href="#@suite.SanitizedName">@(suite.DisplayName ?? suite.Name)</a>
+                    @foreach (var scenario in suite.TestScenarios.OrderBy(scenario => scenario.DisplayName))
+                    {
+                        <a href="#@scenario.SanitizedName">@(scenario.DisplayName ?? scenario.Name)</a>
+                    }
                 }
-                @if (suite.Passed > 0)
-                {
-                    <div class="ui green label" data-tooltip="Total successful test runs" style="float:right;">
-                        <i class="check circle outline icon">
-                        </i>
-                        <b>@suite.Passed</b>
-                        passed
-                    </div>
-                }
-                <!-- Skipped Label -->
-                @if (suite.Skipped > 0)
-                {
-                    <div class="ui gray label" data-tooltip="Total number of skipped tests" style="float:right;     border: 1px solid gray;">
-                        <i class="ban icon">
-                        </i>
-                        <b>@suite.Skipped</b>
-                        skipped
-                    </div>
-                }
-                <div class="ui active indicating progress" data-percent="@suite.SuccessRate" style="margin-top:10px;">
-                    <div class="bar" style="width:@suite.SuccessRate%">
-                        <div class="progress">@suite.Passed/@suite.Total passed</div>
-                    </div>
-                </div>
-            </summary>
-        
-                @foreach (var scenario in suite.TestScenarios)
-                {
-            <div class="scenarioContainer">
-                    <a id="@scenario.SanitizedName"></a>
-                    <details class="scenario">
-                        <summary>
-                            <h3 class="summaryHeading">@scenario.DisplayName</h3>
-                            <!-- Time Label -->
-                            <div class="ui blue label" data-tooltip="Test class runtime" style="float:right;">
-                                <i class="clock icon">
-                                </i>
-                                <b>@($"{scenario.Time:0.000}")</b>
-                                sec
-                            </div>
-                            <div class="ui label" style="background-color: rgba(255, 255, 255, 0.66); border: 1px solid #bbb6b6;">
-                                <b>
-                                    Test Class
-                                </b>
-                            </div>
-                            <!-- Skipped Label -->
-                            @if (scenario.Skipped > 0)
-                            {
-                                <div class="ui gray label" data-tooltip="Total number of skipped tests" style="float:right; border: 1px solid gray;">
-                                    <i class="ban icon">
-                                    </i>
-                                    <b>@scenario.Skipped</b>
-                                    skipped
-                                </div>
-                            }
-                            <!-- Test Results Labels -->
-                            @if (scenario.Passed == scenario.Total)
-                            {
-                                <div class="ui green label" data-tooltip="Total successful test runs" style="float:right;">
-                                    <i class="check circle outline icon">
-                                    </i>
-                                    <b>@scenario.Passed</b>
-                                </div>
-                            }
-                            else if (scenario.Failed > 0)
-                            {
-                                <div class="ui red label" data-tooltip="Total test runs with failed assertions" style="float:right;">
-                                    <i class="exclamation circle icon">
-                                    </i>
-                                    <b>@scenario.Failed</b>
-                                </div>
-                            }
-                            @if (scenario.Errors > 0)
-                            {
-                                <div class="ui orange label" data-tooltip="Total test runs with unanticipated errors" style="float:right;">
-                                    <i class="flag outline icon">
-                                    </i>
-                                    <b>@scenario.Errors</b>
-                                </div>
-                            }
-                            <div class="ui active indicating progress" data-percent="@scenario.SuccessRate" style="margin-top:10px;">
-                                <div class="bar" style="width:@scenario.SuccessRate%">
-                                    <div class="progress">@scenario.Passed/@scenario.Total passed</div>
-                                </div>
-                            </div>
-                        </summary>
-                        @foreach (var test in scenario.Tests)
+            </div>
+        </div>
+    </section>
+
+    <section class="summary-section" style="margin-top:18px;">
+        <div class="section-title">
+            <h2>Scenario catalog</h2>
+            <span>Complete coverage, organized like chapters and sections</span>
+        </div>
+        <div class="book-grid">
+            @foreach (var suite in suites.OrderBy(suite => suite.DisplayName))
+            {
+                <article class="book-suite">
+                    <h3>@(suite.DisplayName ?? suite.Name)</h3>
+                    <div class="book-scenarios">
+                        @foreach (var scenario in suite.TestScenarios.OrderBy(scenario => scenario.DisplayName))
                         {
-                            <a id="@test.SanitizedName"></a>
-                        
-                            <div class="testContainer" style="@GetStyle(test)">
-                                <details class="test">
-                                    <summary class="@GetClass(test)" style="@GetStyle(test)">
-                                        <span style="font-family: Open Sans, sans-serif; font-weight: 300;">
-                                            @{
-                                                var extraStyles = test switch {
-                                                { Result: "Skip" } => " text-decoration: line-through",
-                                                    _ => ""
-                                                    };
+                            <section class="book-scenario">
+                                <div class="book-scenario-header">
+                                    <h4><a href="#@scenario.SanitizedName">@(scenario.DisplayName ?? scenario.Name)</a></h4>
+                                    <span class="book-scenario-meta">@scenario.Total tests</span>
+                                </div>
+                                <ol class="book-tests">
+                                    @foreach (var test in scenario.Tests.OrderBy(test => test.DisplayName))
+                                    {
+                                        var catalogTone = GetResultTone(test);
+                                        <li>
+                                            <a href="#@test.SanitizedName">@(test.DisplayName ?? test.Name)</a>
+                                            @if (catalogTone != PassTone)
+                                            {
+                                                <span class="book-test-indicator @catalogTone" title="@GetResultLabel(test)"></span>
                                             }
-
-                                            <h4 class="summaryHeading" style="@extraStyles">@test.DisplayName</h4>
-                                        </span>
-                                        <!-- Time Label -->
-                                        <div class="ui blue label" data-tooltip="Test runtime" style="float:right;">
-                                            <i class="clock icon">
-                                            </i>
-                                            <b>@($"{test.Time:0.000}")</b>
-                                            sec
-                                        </div>
-                                        @if (test.Failure?.ExceptionType is { Length: > 0 } exceptionType)
-                                        {
-                                            <div class="ui red label" data-tooltip="Exception/Error type" style="float:right;">
-                                                <i class="exclamation triangle icon">
-                                                </i>
-                                                @exceptionType
-                                            </div>
-                                        }
-                                        else if (test.Result == "Fail")
-                                        {
-                                            <div class="ui orange label" data-tooltip="Exception/Error type" style="float:right;">
-                                                <i class="exclamation triangle icon">
-                                                </i>
-                                                @(test.Failure?.ExceptionType)
-                                            </div>
-                                        }
-                                    </summary>
-                                    @if (test.HasContent)
-                                    {
-                                        <div class="content" style="@GetStyle(test)">
-
-                                            <div style="background-color:rgb(243,243,243);border-radius:7px; padding: 25px;">
-                                                @if (test.Failure?.Message is { Length: > 0})
-                                                {
-                                                    <p class="errorMessage failureColor">@Shorten(test.Failure.Message)</p>
-                                                }
-                                                @if (test.Result == "Fail")
-                                                {
-                                                    <p class="errorMessage errorColor">@Shorten(test.Reason)</p>
-                                                }
-
-                                                <div class="ui segment" style="padding-top: 15pt; background-color: #ffffff00; box-shadow: none; border: none;">
-                                                    <div class="tab-wrap">
-                                                    @if (test.Failure?.Message is { Length: > 0 })
-                                                    {
-                                                        <input type="radio" class="tab" name="@($"tabs-{test.SanitizedName}")" id="@($"tab-zfailure-{test.SanitizedName}")" checked="checked"/>
-                                                                                                                                                                                       
-                                                        <label for="@($"tab-zfailure-{test.SanitizedName}")"
-                                                               role="tab"
-                                                               aria-selected="true"
-                                                               aria-controls="@($"tab-content-zfailure-{test.SanitizedName}")"
-                                                               tabindex="0">Failure
-                                                        </label>
-                                                    }
-                                                     @if (test.Failure?.StackTrace is { Length: > 0 })
-                                                     {
-                                                        <input type="radio" class="tab" name="@($"tabs-{test.SanitizedName}")" id="@($"tab-zstacktrace-{test.SanitizedName}")"/>
-                                                                                                                                                                                                                                           
-                                                        <label for="@($"tab-zstacktrace-{test.SanitizedName}")"
-                                                               role="tab"
-                                                               aria-selected="true"
-                                                               aria-controls="@($"tab-content-zstacktrace-{test.SanitizedName}")"
-                                                               tabindex="0">Stack trace
-                                                        </label>
-                                                    
-                                                    }
-                                                    @if (test.Reason is { Length: > 0 })
-                                                      {
-                                                      <input type="radio" class="tab" name="@($"tabs-{test.SanitizedName}")" id="@($"tab-zreason-{test.SanitizedName}")"/>
-                                                                                                                                                                                                                                                                                               
-                                                        <label for="@($"tab-zreason-{test.SanitizedName}")"
-                                                               role="tab"
-                                                               aria-selected="true"
-                                                               aria-controls="@($"tab-content-zreason-{test.SanitizedName}")"
-                                                               tabindex="0">Reason
-                                                        </label>
-                                                                                                        }
-                                                    @if (test.Failure?.Message is { Length: > 0 })
-                                                    {
-                                                        <div class="tab__content">
-                                                            <pre class="test-error-details">
-                                                                <code>@test.Failure.Message</code>
-                                                            </pre>
-                                                        </div>
-                                                    }
-                                                     @if (test.Failure?.StackTrace is { Length: > 0 })
-                                                     {
-                                                        <div class="tab__content">
-                                                            <pre class="test-error-details">
-                                                                <code>@test.Failure.StackTrace</code>
-                                                            </pre>
-                                                    
-                                                        </div>
-                                                    }
-                                                    @if (test.Reason is { Length: > 0 })
-                                                      {
-                                                            
-                                                        <div class="tab__content">
-                                                            <pre class="test-error-details">
-                                                                <code>@test.Reason</code>
-                                                            </pre>
-                                                        </div>
-                                                                                                    }
-                                                    </div>
-
-                                                    </div>
-                                            </div>
-                                        </div>
+                                        </li>
                                     }
-                                    else
-                                    {
-                                        <div class="content" style="padding:0;">
-                                        </div>
-                                    }
-                                </details>
-                            </div>
+                                </ol>
+                            </section>
                         }
-                    </details>                               
-            </div>
-                }
-    
-        </details>
-    </div>
-}
-</div>
+                    </div>
+                </article>
+            }
+        </div>
+    </section>
 
+    <section class="summary-section" style="margin-top:18px;">
+        <div class="section-title">
+            <h2>Quality signals</h2>
+            <span>Failing or unstable test runs</span>
+        </div>
+        @if (failedTests.Count > 0)
+        {
+            <div class="issues-grid">
+                @foreach (var test in failedTests)
+                {
+                    var tone = GetResultTone(test);
+                    <article class="issue-card">
+                        <div class="section-title" style="margin-bottom:10px;">
+                            <span class="tone @tone">@GetResultLabel(test)</span>
+                            <span>@FormatSeconds(test.Time)</span>
+                        </div>
+                        <h3><a href="#@test.SanitizedName">@(test.DisplayName ?? test.Name)</a></h3>
+                        <p>@(Shorten(test.Failure?.Message ?? test.Reason) ?? "No diagnostic message provided.")</p>
+                    </article>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">No failed or errored tests were detected in this report.</div>
+        }
+    </section>
+
+    <section class="summary-section" style="margin-top:18px;">
+        <div class="section-title">
+            <h2>Detailed documentation</h2>
+            <span>Read suites, scenarios, and tests from top to bottom</span>
+        </div>
+
+        <div class="report-sections">
+            @foreach (var suite in suites.OrderBy(suite => suite.DisplayName))
+            {
+                var suiteTone = GetSuiteTone(suite);
+                <a id="@suite.SanitizedName"></a>
+                <details class="suite-shell">
+                    <summary class="suite-summary">
+                        <div class="summary-row">
+                            <div class="summary-copy">
+                                <div class="suite-meta">
+                                    <span class="tone @suiteTone">@ShortStatusLabel(suiteTone)</span>
+                                    @if (suite.TestFramework is { Length: > 0 })
+                                    {
+                                        <span class="metric-chip"><strong>Framework:</strong> @suite.TestFramework</span>
+                                    }
+                                    @if (suite.TargetFramework is { Length: > 0 })
+                                    {
+                                        <span class="metric-chip"><strong>Target:</strong> @suite.TargetFramework</span>
+                                    }
+                                    @if (suite.Environment is { Length: > 0 })
+                                    {
+                                        <span class="metric-chip"><strong>Environment:</strong> @suite.Environment</span>
+                                    }
+                                </div>
+                                <h3>@(suite.DisplayName ?? suite.Name)</h3>
+                                <p>Root namespace: @(suite.RootNamespace ?? "n/a")</p>
+                            </div>
+                            <div class="summary-metrics">
+                                <span class="metric-chip"><strong>@suite.Total</strong> tests</span>
+                                <span class="metric-chip"><strong>@suite.TestScenarios.Count()</strong> scenarios</span>
+                                <span class="metric-chip"><strong>@FormatSeconds(suite.TotalTime)</strong> runtime</span>
+                                <span class="metric-chip"><strong>@FormatPercent(suite.SuccessRate)%</strong> pass rate</span>
+                            </div>
+                        </div>
+                        <div class="bar-track" aria-hidden="true">
+                            <div class="bar-fill" style="width:@(FormatPercent(suite.SuccessRate))%"></div>
+                        </div>
+                        <div class="result-breakdown">
+                            <div class="metric-block pass">
+                                <strong>@suite.Passed</strong>
+                                <span>Passed</span>
+                            </div>
+                            <div class="metric-block fail">
+                                <strong>@suite.Failed</strong>
+                                <span>Failed</span>
+                            </div>
+                            <div class="metric-block error">
+                                <strong>@suite.Errors</strong>
+                                <span>Errored</span>
+                            </div>
+                            <div class="metric-block skip">
+                                <strong>@suite.Skipped</strong>
+                                <span>Skipped</span>
+                            </div>
+                            <div class="metric-block unknown">
+                                <strong>@suite.NotRun</strong>
+                                <span>Not run</span>
+                            </div>
+                        </div>
+                    </summary>
+
+                    <div class="suite-content">
+                        @foreach (var scenario in suite.TestScenarios.OrderBy(scenario => scenario.DisplayName))
+                        {
+                            var scenarioTone = GetScenarioTone(scenario);
+                            <a id="@scenario.SanitizedName"></a>
+                            <details class="scenario-shell">
+                                <summary class="scenario-summary">
+                                    <div class="summary-row">
+                                        <div class="summary-copy">
+                                            <h4>@(scenario.DisplayName ?? scenario.Name)</h4>
+                                            <p>@scenario.Total tests documented in this scenario.</p>
+                                            @if (scenarioTone != PassTone)
+                                            {
+                                                <div class="scenario-meta">
+                                                    <span class="tone @scenarioTone">@ShortStatusLabel(scenarioTone)</span>
+                                                </div>
+                                            }
+                                        </div>
+                                        <div class="summary-metrics">
+                                            <span class="metric-chip"><strong>@scenario.Total</strong> tests</span>
+                                            <span class="metric-chip"><strong>@FormatSeconds(scenario.Time)</strong> runtime</span>
+                                            <span class="metric-chip"><strong>@FormatPercent(scenario.SuccessRate)%</strong> pass rate</span>
+                                        </div>
+                                    </div>
+                                    <div class="bar-track" aria-hidden="true">
+                                        <div class="bar-fill" style="width:@(FormatPercent(scenario.SuccessRate))%"></div>
+                                    </div>
+                                </summary>
+
+                                <div class="scenario-content">
+                                    @foreach (var test in scenario.Tests.OrderBy(test => test.DisplayName))
+                                    {
+                                        var testTone = GetResultTone(test);
+                                        <a id="@test.SanitizedName"></a>
+                                        <details class="test-shell">
+                                            <summary class="test-summary">
+                                                <div class="summary-row">
+                                                    <div class="summary-copy">
+                                                        <h5>@(test.DisplayName ?? test.Name)</h5>
+                                                        <div class="test-meta">
+                                                            @if (test.Type is { Length: > 0 })
+                                                            {
+                                                                <span class="metric-chip"><strong>Type:</strong> @test.Type</span>
+                                                            }
+                                                            @if (test.Method is { Length: > 0 })
+                                                            {
+                                                                <span class="metric-chip"><strong>Method:</strong> @test.Method</span>
+                                                            }
+                                                            @if (testTone != PassTone)
+                                                            {
+                                                                <span class="tone @testTone">@GetResultLabel(test)</span>
+                                                            }
+                                                        </div>
+                                                        <p>
+                                                            @if (test.SourceFile is { Length: > 0 })
+                                                            {
+                                                                <span class="source-link">@test.SourceFile@if (test.SourceLine is { Length: > 0 }) {<text>:@test.SourceLine</text>}</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="secondary-text">Source location unavailable</span>
+                                                            }
+                                                        </p>
+                                                    </div>
+                                                    <div class="summary-metrics">
+                                                        <span class="metric-chip"><strong>@FormatSeconds(test.Time)</strong> runtime</span>
+                                                        @if (test.Failure?.ExceptionType is { Length: > 0 })
+                                                        {
+                                                            <span class="metric-chip"><strong>Exception:</strong> @test.Failure.ExceptionType</span>
+                                                        }
+                                                    </div>
+                                                </div>
+                                                @if (test.Failure?.Message is { Length: > 0 } || test.Reason is { Length: > 0 })
+                                                {
+                                                    <div class="failure-banner @(testTone)">
+                                                        <strong>Primary diagnostic</strong>
+                                                        @(Shorten(test.Failure?.Message ?? test.Reason) ?? "No diagnostic message provided.")
+                                                    </div>
+                                                }
+                                            </summary>
+
+                                            @if (test.HasContent)
+                                            {
+                                                <div class="test-content">
+                                                    <div class="artifact-grid">
+                                                        @if (test.Failure?.Message is { Length: > 0 })
+                                                        {
+                                                            <section class="artifact">
+                                                                <div class="artifact-title">Failure message</div>
+                                                                <pre><code>@test.Failure.Message</code></pre>
+                                                            </section>
+                                                        }
+                                                        @if (test.Reason is { Length: > 0 })
+                                                        {
+                                                            <section class="artifact">
+                                                                <div class="artifact-title">Reason</div>
+                                                                <pre><code>@test.Reason</code></pre>
+                                                            </section>
+                                                        }
+                                                        @if (test.Failure?.StackTrace is { Length: > 0 })
+                                                        {
+                                                            <section class="artifact">
+                                                                <div class="artifact-title">Stack trace</div>
+                                                                <pre><code>@test.Failure.StackTrace</code></pre>
+                                                            </section>
+                                                        }
+                                                        @if (test.Output is { Length: > 0 })
+                                                        {
+                                                            <section class="artifact">
+                                                                <div class="artifact-title">Captured output</div>
+                                                                <pre><code>@test.Output</code></pre>
+                                                            </section>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            }
+                                        </details>
+                                    }
+                                </div>
+                            </details>
+                        }
+                    </div>
+                </details>
+            }
+        </div>
+    </section>
+</div>
 </body>
 </html>
