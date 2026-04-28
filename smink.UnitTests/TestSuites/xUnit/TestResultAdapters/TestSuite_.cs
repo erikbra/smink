@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using smink.Models.Report;
 using smink.Models.XUnit;
 

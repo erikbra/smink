@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using smink.Models.Report;
 using smink.TestResultAdapters;
 using smink.TestResultReaders;
@@ -69,14 +69,18 @@ Actual:   False");
     [Fact]
     public void Failed_test_has_correct_Failure_StackTrace()
     {
-        // Need to split the assertion in two, because the path of the file varies per build environment (e.g. local or github)
-        _failedTest.Failure!.StackTrace.Should().StartWith(
-            $@"   at xUnit.ExampleTests.Set1.TestSuites.Adding_a_new_customer.When_the_customer_is_too_old.We_make_them_happy() in /");
+        // Keep intent: verify this test/frame and source location are present,
+        // while allowing runtime-specific reflection frames to vary between .NET versions.
+        var stackTrace = _failedTest.Failure!.StackTrace;
 
-        _failedTest.Failure!.StackTrace.Should().EndWith(
-            $@"smink/ExampleTestProjects/xUnit.ExampleTests/xUnit.ExampleTests.Set1/TestSuites/Adding_a_new_customer/When_the_customer_is_too_old.cs:line 12
-   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
-   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)");
+        stackTrace.Should().StartWith(
+            "   at xUnit.ExampleTests.Set1.TestSuites.Adding_a_new_customer.When_the_customer_is_too_old.We_make_them_happy() in /");
+
+        stackTrace.Should().Contain(
+            "smink/ExampleTestProjects/xUnit.ExampleTests/xUnit.ExampleTests.Set1/TestSuites/Adding_a_new_customer/When_the_customer_is_too_old.cs:line 12");
+
+        stackTrace.Should().MatchRegex(
+            @"(?s)\s+at System\.(RuntimeMethodHandle\.InvokeMethod|Reflection\.MethodBaseInvoker\.)");
 
     }
 }

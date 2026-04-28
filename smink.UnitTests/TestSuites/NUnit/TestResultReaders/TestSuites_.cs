@@ -1,6 +1,6 @@
 using System.Globalization;
-using FluentAssertions;
-using FluentAssertions.Execution;
+using AwesomeAssertions;
+using AwesomeAssertions.Execution;
 using smink.Models.NUnit;
 using smink.Models.XUnit;
 
