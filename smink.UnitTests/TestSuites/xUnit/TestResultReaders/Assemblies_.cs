@@ -1,5 +1,5 @@
 using System.Globalization;
-using FluentAssertions;
+using AwesomeAssertions;
 using smink.Models.XUnit;
 
 namespace smink.UnitTests.TestSuites.xUnit.TestResultReaders;

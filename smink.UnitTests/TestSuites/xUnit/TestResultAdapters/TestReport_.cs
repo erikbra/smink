@@ -1,5 +1,5 @@
-using FluentAssertions;
-using FluentAssertions.Execution;
+using AwesomeAssertions;
+using AwesomeAssertions.Execution;
 using smink.Models.Report;
 using smink.Models.XUnit;
 using smink.TestResultAdapters;
