@@ -36,7 +36,9 @@ public class DefaultTestReportTemplateRazorPage: ComponentBase
         }
 
         var span = TimeSpan.FromSeconds((double)seconds);
-        return span.ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture);
+        return span.Days > 0
+            ? span.ToString(@"d\.hh\:mm\:ss", CultureInfo.InvariantCulture)
+            : span.ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture);
     }
 
     protected static string FormatDuration(TimeSpan duration)
@@ -51,7 +53,9 @@ public class DefaultTestReportTemplateRazorPage: ComponentBase
             return $"{duration.TotalSeconds.ToString("0.###", CultureInfo.InvariantCulture)} s";
         }
 
-        return duration.ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture);
+        return duration.Days > 0
+            ? duration.ToString(@"d\.hh\:mm\:ss", CultureInfo.InvariantCulture)
+            : duration.ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture);
     }
 
     protected static string FormatTimestamp(DateTime? timestamp) =>
