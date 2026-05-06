@@ -674,6 +674,9 @@
             border-left: 4px solid var(--fail);
             border-radius: 12px;
             background: rgba(194, 65, 12, 0.08);
+            box-sizing: border-box;
+            max-width: 100%;
+            overflow: scroll;
         }
 
         .failure-banner.error {
@@ -689,6 +692,19 @@
         .failure-banner strong {
             display: block;
             margin-bottom: 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        }
+
+        .failure-banner-message {
+            display: block;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            font: 12px/1.6 "SFMono-Regular", Menlo, Consolas, monospace;
         }
 
         .artifact-grid {
@@ -696,23 +712,28 @@
         }
 
         .artifact-title {
-            margin-bottom: 10px;
-            font-size: 0.8rem;
+            margin-top: 0;
+            margin-bottom: 12px;
+            font-size: 0.75rem;
             font-weight: 700;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.1em;
             text-transform: uppercase;
+            color: #9ca3af;
         }
 
         pre {
-            overflow: auto;
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: 400px;
             margin: 0;
-            padding: 14px;
+            padding: 16px;
             border-radius: 10px;
             background: #0f1d17;
             color: #e6f5ef;
-            font: 13px/1.45 "SFMono-Regular", Menlo, Consolas, monospace;
-            white-space: pre-wrap;
-            word-break: break-word;
+            font: 12px/1.6 "SFMono-Regular", Menlo, Consolas, monospace;
+            white-space: pre;
+            word-break: normal;
+            border: 1px solid #1a3a2e;
         }
 
         code {
@@ -1129,8 +1150,7 @@
                                                 @if (test.Failure?.Message is { Length: > 0 } || test.Reason is { Length: > 0 })
                                                 {
                                                     <div class="failure-banner @(testTone)">
-                                                        <strong>Primary diagnostic</strong>
-                                                        @(Shorten(test.Failure?.Message ?? test.Reason) ?? "No diagnostic message provided.")
+                                                        <strong>Primary diagnostic</strong><span class="failure-banner-message">@(Shorten(test.Failure?.Message ?? test.Reason) ?? "No diagnostic message provided.")</span>
                                                     </div>
                                                 }
                                             </summary>
