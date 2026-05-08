@@ -24,6 +24,7 @@ public class TRXResultsReader
             var theseResults = Parse(doc, Path.GetFileNameWithoutExtension(file));
             if (theseResults is { })
             {
+                assemblies.Timestamp = GetEarliestTimestamp(assemblies.Timestamp, theseResults.Timestamp);
                 assemblies.AssembliesList.AddRange(theseResults.AssembliesList);
             }
         }
@@ -39,6 +40,7 @@ public class TRXResultsReader
 
         var ns = root.Name.NamespaceName;
         var xns = XNamespace.Get(ns);
+        var timestamp = GetTimestamp(root, xns);
 
         var assemblyName = $"{fileName}.dll";
         var assembly = new Assembly
@@ -85,13 +87,13 @@ public class TRXResultsReader
         // Parse results
         var resultsElement = root.Element(xns + "Results");
         if (resultsElement is null)
-            return new Assemblies { AssembliesList = [assembly] };
+            return new Assemblies { Timestamp = timestamp, AssembliesList = [assembly] };
 
         var testResults = resultsElement.Elements(xns + "UnitTestResult").ToList();
 
         if (testResults.Count == 0)
         {
-            var assemblies = new Assemblies { AssembliesList = [assembly] };
+            var assemblies = new Assemblies { Timestamp = timestamp, AssembliesList = [assembly] };
             return assemblies;
         }
 
@@ -201,7 +203,53 @@ public class TRXResultsReader
         assembly.NotRun = assembly.Skipped;
         assembly.Total = collectionMap.Values.Sum(c => c.Total);
 
-        return new Assemblies { AssembliesList = [assembly] };
+        return new Assemblies { Timestamp = timestamp, AssembliesList = [assembly] };
+    }
+
+    private static string? GetTimestamp(XElement root, XNamespace xns)
+    {
+        var times = root.Element(xns + "Times");
+        return FirstParsableTimestamp(
+            times?.Attribute("creation")?.Value,
+            times?.Attribute("start")?.Value,
+            times?.Attribute("queuing")?.Value
+        );
+    }
+
+    private static string? GetEarliestTimestamp(string? current, string? incoming)
+    {
+        if (!TryParseTimestamp(current, out var currentTime))
+            return incoming;
+
+        if (!TryParseTimestamp(incoming, out var incomingTime))
+            return current;
+
+        return incomingTime < currentTime ? incoming : current;
+    }
+
+    private static string? FirstParsableTimestamp(params string?[] candidates)
+    {
+        foreach (var candidate in candidates)
+        {
+            if (TryParseTimestamp(candidate, out _))
+            {
+                return candidate;
+            }
+        }
+
+        return null;
+    }
+
+    private static bool TryParseTimestamp(string? value, out DateTime timestamp)
+    {
+        if (value is { Length: > 0 } &&
+            DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out timestamp))
+        {
+            return true;
+        }
+
+        timestamp = default;
+        return false;
     }
 
     private static string ExtractMethodName(string testName)
